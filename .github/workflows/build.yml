@@ -27,7 +27,7 @@ jobs:
       - name: PGP Prepare
         run: |
           sed -i -e "s,gradle.publish.key=,gradle.publish.key=$PUB_KEY,g" gradle.properties
-          sed -i -e "s,gradle.publish.secret=,gradle.publish.key=$PUB_SECRECT,g" gradle.properties
+          sed -i -e "s,gradle.publish.secret=,gradle.publish.secret=$PUB_SECRECT,g" gradle.properties
           cat gradle.properties
       - name: Build with Gradle
         run: gradle build
