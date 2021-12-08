@@ -158,6 +158,7 @@ internal object BuildConfig {
                                     snapshotRepositoryUrl.set(uri(settings.snapshotUrl.orEmpty()))
                                     username.set(settings.username)
                                     password.set(settings.password)
+                                    allowInsecureProtocol.set(settings.allowInsecureProtocol)
                                 }
                             }
                         }else{
