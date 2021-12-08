@@ -3,7 +3,7 @@ plugins {
     kotlin("jvm") version Constants.kotlinVersion
     id("com.gradle.plugin-publish") version "0.18.0"
     if(Constants.testPlugin) {
-        id("com.labijie.infra") version ("1.0.1") apply false
+        id("com.labijie.infra") version (Constants.projectVersion) apply false
     }
     id("maven-publish")
     id("signing")
@@ -13,7 +13,7 @@ plugins {
 
 
 group = "com.labijie.infra"
-version = "1.0.1"
+version = Constants.projectVersion
 
 fun getProxyMavenRepository(): String {
     val proxy: String? = System.getenv("MAVEN_PROXY")?.ifBlank { null }
@@ -59,6 +59,8 @@ dependencies {
     api("io.github.gradle-nexus:publish-plugin:${Constants.publishingPluginVersion}")
     api("org.jetbrains.kotlin:kotlin-allopen:${Constants.kotlinVersion}")
     api("org.jetbrains.kotlin:kotlin-gradle-plugin:${Constants.kotlinVersion}")
+
+    compileOnly("com.google.devtools.ksp:com.google.devtools.ksp.gradle.plugin:${Constants.kspPluginVersion}")
 }
 
 

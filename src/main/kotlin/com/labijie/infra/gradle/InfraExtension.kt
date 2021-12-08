@@ -1,12 +1,17 @@
 package com.labijie.infra.gradle
 
+import com.google.devtools.ksp.gradle.KspExtension
 import com.labijie.infra.gradle.BuildConfig.useDefault
 import com.labijie.infra.gradle.BuildConfig.useNexusPublishPlugin
 import com.labijie.infra.gradle.BuildConfig.usePublishing
+import com.labijie.infra.gradle.Utils.apply
+import com.labijie.infra.gradle.Utils.configureFor
 import com.labijie.infra.gradle.internal.*
 import org.gradle.api.Action
 import org.gradle.api.Project
 import org.gradle.api.internal.provider.MissingValueException
+import java.io.File
+import kotlin.io.path.Path
 
 /**
  *
@@ -20,10 +25,33 @@ open class InfraExtension(private val project: Project) {
     }
 
     fun useNexusPublish() {
-        if(project.parent == null) {
+        if (project.parent == null) {
             this.project.useNexusPublishPlugin()
-        }else{
-            project.logger.warn("${project.name} is not a root project, useNexusPublish skipped.")
+        } else {
+            project.logger.debug("${project.name} is not a root project, useNexusPublish skipped.")
+        }
+    }
+
+    fun useInfraOrmGenerator(version: String = "1.0.0", outputDir: String? = null, packageName:String? = null) {
+        if (!project.pluginManager.hasPlugin("com.google.devtools.ksp")) {
+            project.apply(plugin = "com.google.devtools.ksp")
+        }
+        project.dependencies.apply {
+            this.add("ksp", "com.labijie.orm:exposed-generator:${version}")
+        }
+        if(!outputDir.isNullOrBlank() || !packageName.isNullOrBlank()){
+            project.configureFor(KspExtension::class.java){
+                if(!outputDir.isNullOrBlank()){
+                    var dir: String = outputDir
+                    if(!File(dir).isAbsolute){
+                        dir = Path(project.projectDir.absolutePath, outputDir).toString()
+                    }
+                    this.arg("exg_out_dir", dir)
+                }
+                if(!packageName.isNullOrBlank()){
+                    this.arg("exg_package", packageName)
+                }
+            }
         }
     }
 

@@ -130,7 +130,6 @@ internal object BuildConfig {
 
     fun Project.useNexusPublishPlugin() {
         this.mustBeRoot("useNexusPublishPlugin")
-
         this.apply(plugin = "io.github.gradle-nexus.publish-plugin")
         if (this.extensions.findByName("nexusPublishing") != null) {
             this.extensions.configure(NexusPublishExtension::class.java) {
