@@ -19,4 +19,26 @@ class PomInfo {
         this.licenseName = name
         this.licenseUrl = url
     }
+
+    /**
+     * set github project follow properties:
+     * @see projectUrl
+     * @see gitUrl
+     * @see githubScmUrl
+     */
+    fun githubUrl(organizationOrUser: String, repository: String){
+        this.projectUrl = "https://github.com/${organizationOrUser}/${repository}"
+        this.githubScmUrl = "scm:git@github.com:${organizationOrUser}/${repository}.git"
+        this.gitUrl = "https://github.com/${organizationOrUser}/${repository}.git"
+    }
+
+    /**
+     * set developer info follow properties:
+     * @see developerName
+     * @see developerMail
+     */
+    fun developer(name: String, email: String) {
+        this.developerName = name
+        this.developerMail = email
+    }
 }
