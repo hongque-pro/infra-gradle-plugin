@@ -76,7 +76,7 @@ open class InfraExtension(private val project: Project) {
         if (pom.gitUrl.isBlank()) throw MissingValueException("${pom::gitUrl.name} is missing, set in labijie publish block")
         if (pom.githubScmUrl.isBlank()) throw MissingValueException("${pom::githubScmUrl.name} is missing, set in labijie publish block")
 
-        this.project.usePublishing(pom)
+        this.project.usePublishing(pom, pom.idGeneration)
     }
 
 }

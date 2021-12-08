@@ -1,5 +1,7 @@
 package com.labijie.infra.gradle.internal
 
+import org.gradle.api.Project
+
 class PomInfo {
     var description: String = ""
     var projectUrl: String = ""
@@ -14,6 +16,17 @@ class PomInfo {
     var developerMail: String = "tech@labijie.com"
 
     var projectName: String? = null
+
+    internal var idGeneration: ((p: Project) -> String)? = null
+
+    fun artifactId(idGen: (p: Project) -> String){
+        this.idGeneration = idGeneration
+    }
+
+    fun artifactId(id: String){
+        this.idGeneration = { id }
+    }
+
 
     fun license(name: String, url: String){
         this.licenseName = name
