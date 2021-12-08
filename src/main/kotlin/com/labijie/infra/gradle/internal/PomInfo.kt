@@ -20,7 +20,7 @@ class PomInfo {
     internal var idGeneration: ((p: Project) -> String)? = null
 
     fun artifactId(idGen: (p: Project) -> String){
-        this.idGeneration = idGeneration
+        this.idGeneration = idGen
     }
 
     fun artifactId(id: String){
