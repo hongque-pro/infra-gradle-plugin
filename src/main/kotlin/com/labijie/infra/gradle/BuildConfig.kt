@@ -3,8 +3,10 @@ package com.labijie.infra.gradle
 import com.labijie.infra.gradle.Utils.apply
 import com.labijie.infra.gradle.Utils.configureFor
 import com.labijie.infra.gradle.Utils.the
+import com.labijie.infra.gradle.internal.NexusSettings
 import com.labijie.infra.gradle.internal.PomInfo
 import io.github.gradlenexus.publishplugin.NexusPublishExtension
+import io.github.gradlenexus.publishplugin.NexusRepository
 import org.gradle.api.Project
 import org.gradle.api.artifacts.dsl.RepositoryHandler
 import org.gradle.api.plugins.JavaPluginExtension
@@ -128,14 +130,13 @@ internal object BuildConfig {
         }
     }
 
-    fun Project.useNexusPublishPlugin() {
+    fun Project.useNexusPublishPlugin(configure: ((repo: NexusSettings)->Unit)? = null) {
         this.mustBeRoot("useNexusPublishPlugin")
         this.apply(plugin = "io.github.gradle-nexus.publish-plugin")
         if (this.extensions.findByName("nexusPublishing") != null) {
             this.extensions.configure(NexusPublishExtension::class.java) {
                 val u = project.getPropertyOrCmdArgs("PUB_USER", "u")
                 val p = project.getPropertyOrCmdArgs("PUB_PWD", "p")
-                val s = project.getPropertyOrCmdArgs("PUB_URL", "s") ?: "https://your-nexus-server.com/publish"
                 it.repositories.apply {
                     sonatype { st ->
                         st.apply {
@@ -146,18 +147,21 @@ internal object BuildConfig {
                                 }
                             }
                         }
-
                     }
-                    create("nexus") { nexus ->
-                        nexus.apply {
-                            nexusUrl.set(uri(s))
-                            //snapshotRepositoryUrl.set(uri("https://your-server.com/snapshots"))
-                            if (u != null) {
-                                username.set(u) // defaults to project.properties["nexusUsername"]
-                                if (p != null) {
-                                    password.set(p) // defaults to project.properties["nexusPassword"]
+                    if(configure != null) {
+                        val settings = NexusSettings(u ?: "", p ?: "")
+                        configure(settings)
+                        if(settings.isValid()) {
+                            create("nexus") { nexus ->
+                                nexus.apply {
+                                    nexusUrl.set(uri(settings.releaseUrl.orEmpty()))
+                                    snapshotRepositoryUrl.set(uri(settings.snapshotUrl.orEmpty()))
+                                    username.set(settings.username)
+                                    password.set(settings.password)
                                 }
                             }
+                        }else{
+                            project.logger.warn("Private nexus settings invalid, make sure username, password, releaseUrl and snapshotUrl can not be null or empty.")
                         }
                     }
                 }
