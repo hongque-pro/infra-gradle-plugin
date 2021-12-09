@@ -38,6 +38,7 @@ tasks.withType(JavaCompile::class.java) {
 
 configure<JavaPluginExtension> {
     withJavadocJar()
+    withSourcesJar()
 }
 
 tasks.withType(Javadoc::class.java) {
