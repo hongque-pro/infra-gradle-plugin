@@ -71,7 +71,7 @@ internal object BuildConfig {
         jvmVersion: String = "1.8",
         includeSource: Boolean = true,
         useMavenProxy: Boolean = true,
-        bomVersion: String? = null,
+        bomVersion: String? = null
     ) {
         if (this.parent == null) {
             this.buildscript.repositories.apply {
@@ -112,15 +112,23 @@ internal object BuildConfig {
         }
 
         this.dependencies.apply {
+            this.add("api", "org.jetbrains.kotlin:kotlin-stdlib-jdk8:${kotlinVersion}")
+            this.add("api", "org.jetbrains.kotlin:kotlin-reflect:${kotlinVersion}")
+
             if (!bomVersion.isNullOrBlank()) {
                 this.add("implementation", platform("com.labijie.bom:lib-dependencies:${bomVersion}"))
                 this.add("testImplementation", "org.jetbrains.kotlin:kotlin-test-junit5")
                 this.add("testImplementation", "org.junit.jupiter:junit-jupiter-api")
                 this.add("testImplementation", "org.junit.jupiter:junit-jupiter-engine")
                 this.add("testImplementation", "org.mockito:mockito-all")
+            }else{
+                val junitVersion = "5.8.2"
+                val mockitoVersion = "1.10.19"
+                this.add("testImplementation", "org.jetbrains.kotlin:kotlin-test-junit5:${kotlinVersion}")
+                this.add("testImplementation", "org.junit.jupiter:junit-jupiter-api:${junitVersion}")
+                this.add("testImplementation", "org.junit.jupiter:junit-jupiter-engine:${junitVersion}")
+                this.add("testImplementation", "org.mockito:mockito-all:${mockitoVersion}")
             }
-            this.add("api", "org.jetbrains.kotlin:kotlin-stdlib-jdk8:${kotlinVersion}")
-            this.add("api", "org.jetbrains.kotlin:kotlin-reflect:${kotlinVersion}")
             /**
             testImplementation "org.jetbrains.kotlin:kotlin-test-junit5:$kotlin_version"
             testImplementation "org.junit.jupiter:junit-jupiter-api"

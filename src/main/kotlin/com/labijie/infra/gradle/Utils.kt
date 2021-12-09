@@ -2,6 +2,7 @@ package com.labijie.infra.gradle
 
 import org.gradle.api.Project
 import org.gradle.api.plugins.PluginAware
+import java.io.File
 import kotlin.reflect.KClass
 import kotlin.reflect.typeOf
 
@@ -33,4 +34,14 @@ object Utils {
         @Suppress("deprecation") convention.findByType(extensionType.java)
             ?: @Suppress("deprecation") convention.findPlugin(extensionType.java)
             ?: @Suppress("deprecation") convention.getByType(extensionType.java)
+
+
+    fun Project.getProjectFile(file: String): String {
+        val f = File(file)
+        return if(f.isAbsolute){
+            f.absolutePath
+        }else{
+            File(this.projectDir, file).absolutePath
+        }
+    }
 }

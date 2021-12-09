@@ -59,6 +59,7 @@ dependencies {
     api("io.github.gradle-nexus:publish-plugin:${Constants.publishingPluginVersion}")
     api("org.jetbrains.kotlin:kotlin-allopen:${Constants.kotlinVersion}")
     api("org.jetbrains.kotlin:kotlin-gradle-plugin:${Constants.kotlinVersion}")
+    api("${Constants.mybatisPluginLib}:${Constants.mybatisPluginVersion}")
 
     compileOnly("com.google.devtools.ksp:com.google.devtools.ksp.gradle.plugin:${Constants.kspPluginVersion}")
 }
