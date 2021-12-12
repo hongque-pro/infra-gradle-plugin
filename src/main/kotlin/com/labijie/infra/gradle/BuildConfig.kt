@@ -116,7 +116,7 @@ internal object BuildConfig {
             this.add("api", "org.jetbrains.kotlin:kotlin-reflect:${kotlinVersion}")
 
             if (!bomVersion.isNullOrBlank()) {
-                this.add("implementation", platform("com.labijie.bom:lib-dependencies:${bomVersion}"))
+                this.add("api", platform("com.labijie.bom:lib-dependencies:${bomVersion}"))
                 this.add("testImplementation", "org.jetbrains.kotlin:kotlin-test-junit5")
                 this.add("testImplementation", "org.junit.jupiter:junit-jupiter-api")
                 this.add("testImplementation", "org.junit.jupiter:junit-jupiter-engine")
@@ -156,9 +156,13 @@ internal object BuildConfig {
                             }
                         }
                     }
-                    if(configure != null) {
+                    val s = project.getPropertyOrCmdArgs("PUB_URL", "s")
+                    if(configure != null || !s.isNullOrBlank()) {
                         val settings = NexusSettings(u ?: "", p ?: "")
-                        configure(settings)
+                        settings.snapshotUrl = s
+                        settings.releaseUrl = s
+                        configure?.invoke(settings)
+
                         if(settings.isValid()) {
                             create("nexus") { nexus ->
                                 nexus.apply {
@@ -173,6 +177,8 @@ internal object BuildConfig {
                             project.logger.warn("Private nexus settings invalid, make sure username, password, releaseUrl and snapshotUrl can not be null or empty.")
                         }
                     }
+
+
                 }
             }
         }
