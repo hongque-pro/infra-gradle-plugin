@@ -6,5 +6,6 @@ object Constants {
     const val kspPluginVersion = "1.6.0-1.0.1"
     const val mybatisPluginVersion = "2.4"
     const val mybatisPluginLib = "gradle.plugin.com.thinkimi.gradle:mybatis-generator-plugin"
+    const val checkUpdatePlugin = "0.39.0"
 }
 

@@ -17,6 +17,7 @@ import org.gradle.api.tasks.javadoc.Javadoc
 import org.gradle.api.tasks.testing.Test
 import org.gradle.buildinit.plugins.internal.KotlinGradlePluginProjectInitDescriptor
 import org.gradle.plugins.signing.SigningExtension
+import java.time.Duration
 
 internal object BuildConfig {
     private fun Any?.isNotNullOrBlank(): Boolean {
@@ -155,6 +156,11 @@ internal object BuildConfig {
             this.extensions.configure(NexusPublishExtension::class.java) {
                 val u = project.getPropertyOrCmdArgs("PUB_USER", "u")
                 val p = project.getPropertyOrCmdArgs("PUB_PWD", "p")
+                val s = project.getPropertyOrCmdArgs("PUB_URL", "s")
+                val settings = NexusSettings(u ?: "", p ?: "")
+                settings.snapshotUrl = s
+                settings.releaseUrl = s
+
                 it.repositories.apply {
                     sonatype { st ->
                         st.apply {
@@ -166,13 +172,8 @@ internal object BuildConfig {
                             }
                         }
                     }
-                    val s = project.getPropertyOrCmdArgs("PUB_URL", "s")
                     if (configure != null || !s.isNullOrBlank()) {
-                        val settings = NexusSettings(u ?: "", p ?: "")
-                        settings.snapshotUrl = s
-                        settings.releaseUrl = s
                         configure?.invoke(settings)
-
                         if (settings.isValid()) {
                             create("nexus") { nexus ->
                                 nexus.apply {
@@ -189,6 +190,17 @@ internal object BuildConfig {
                     }
 
 
+                }
+
+                it.connectTimeout.set(settings.connectTimeout)
+                it.clientTimeout.set(settings.clientTimeout)
+
+                it.transitionCheckOptions {
+                    options->
+                    // We have many artifacts so Maven Central takes a long time on its compliance checks. This sets
+                    // the timeout for waiting for the repository to close to a comfortable 50 minutes.
+                    options.maxRetries.set(settings.checkRetry)
+                    options.delayBetween.set(settings.checkInterval)
                 }
             }
         }

@@ -61,6 +61,7 @@ dependencies {
     api("org.jetbrains.kotlin:kotlin-allopen:${Constants.kotlinVersion}")
     api("org.jetbrains.kotlin:kotlin-gradle-plugin:${Constants.kotlinVersion}")
     api("${Constants.mybatisPluginLib}:${Constants.mybatisPluginVersion}")
+    api("com.github.ben-manes:gradle-versions-plugin:${Constants.checkUpdatePlugin}")
 
     compileOnly("com.google.devtools.ksp:com.google.devtools.ksp.gradle.plugin:${Constants.kspPluginVersion}")
 }

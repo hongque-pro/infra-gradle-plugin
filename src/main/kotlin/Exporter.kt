@@ -11,6 +11,7 @@ import org.gradle.api.Project
  */
 fun Project.infra(action: Action<in InfraExtension>){
     this.apply(plugin="com.labijie.infra")
+    this.apply(plugin="com.github.ben-manes.versions")
     val ext = this.extensions.findByName(InfraExtension.Name)
     if(ext != null && ext is InfraExtension) {
         this.extensions.configure(InfraExtension::class.java, action)
