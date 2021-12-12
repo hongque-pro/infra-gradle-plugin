@@ -6,7 +6,6 @@ import com.labijie.infra.gradle.Utils.the
 import com.labijie.infra.gradle.internal.NexusSettings
 import com.labijie.infra.gradle.internal.PomInfo
 import io.github.gradlenexus.publishplugin.NexusPublishExtension
-import io.github.gradlenexus.publishplugin.NexusRepository
 import org.gradle.api.Project
 import org.gradle.api.artifacts.dsl.RepositoryHandler
 import org.gradle.api.plugins.JavaPluginExtension
@@ -15,9 +14,7 @@ import org.gradle.api.publish.maven.MavenPublication
 import org.gradle.api.tasks.compile.JavaCompile
 import org.gradle.api.tasks.javadoc.Javadoc
 import org.gradle.api.tasks.testing.Test
-import org.gradle.buildinit.plugins.internal.KotlinGradlePluginProjectInitDescriptor
 import org.gradle.plugins.signing.SigningExtension
-import java.time.Duration
 
 internal object BuildConfig {
     private fun Any?.isNotNullOrBlank(): Boolean {
@@ -214,6 +211,8 @@ internal object BuildConfig {
         val project = this
         val artifact = artifactName?.invoke(project) ?: project.name
 
+
+
         this.configureFor(PublishingExtension::class.java) {
             publications { pub ->
                 pub.create("maven", MavenPublication::class.java).apply {
@@ -242,7 +241,15 @@ internal object BuildConfig {
                             it.connection.set(info.githubScmUrl)
                             it.developerConnection.set(info.gitUrl)
                         }
+
+                        versionMapping { it ->
+                            it.allVariants {strategy->
+                                strategy.fromResolutionResult()
+                            }
+                        }
                     }
+
+
                 }
             }
         }
