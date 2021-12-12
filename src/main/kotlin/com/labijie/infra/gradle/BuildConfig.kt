@@ -103,7 +103,17 @@ internal object BuildConfig {
             it.isFailOnError = false
         }
 
-        this.repositories.useDefaultRepositories(useMavenProxy)
+        val proxy = this.getPropertyOrCmdArgs("USE_PROXY", "proxy").orEmpty()
+
+        val useP = if (proxy.equals("true", ignoreCase = true)) {
+            true
+        } else if (proxy.equals("false", ignoreCase = true)){
+            false
+        }else{
+            null
+        }
+
+        this.repositories.useDefaultRepositories(useP ?: useMavenProxy)
 
         if (this.tasks.findByName("test") != null) {
             this.tasks.withType(Test::class.java) {
@@ -121,7 +131,7 @@ internal object BuildConfig {
                 this.add("testImplementation", "org.junit.jupiter:junit-jupiter-api")
                 this.add("testImplementation", "org.junit.jupiter:junit-jupiter-engine")
                 this.add("testImplementation", "org.mockito:mockito-all")
-            }else{
+            } else {
                 val junitVersion = "5.8.2"
                 val mockitoVersion = "1.10.19"
                 this.add("testImplementation", "org.jetbrains.kotlin:kotlin-test-junit5:${kotlinVersion}")
@@ -138,7 +148,7 @@ internal object BuildConfig {
         }
     }
 
-    fun Project.useNexusPublishPlugin(configure: ((repo: NexusSettings)->Unit)? = null) {
+    fun Project.useNexusPublishPlugin(configure: ((repo: NexusSettings) -> Unit)? = null) {
         this.mustBeRoot("useNexusPublishPlugin")
         this.apply(plugin = "io.github.gradle-nexus.publish-plugin")
         if (this.extensions.findByName("nexusPublishing") != null) {
@@ -157,13 +167,13 @@ internal object BuildConfig {
                         }
                     }
                     val s = project.getPropertyOrCmdArgs("PUB_URL", "s")
-                    if(configure != null || !s.isNullOrBlank()) {
+                    if (configure != null || !s.isNullOrBlank()) {
                         val settings = NexusSettings(u ?: "", p ?: "")
                         settings.snapshotUrl = s
                         settings.releaseUrl = s
                         configure?.invoke(settings)
 
-                        if(settings.isValid()) {
+                        if (settings.isValid()) {
                             create("nexus") { nexus ->
                                 nexus.apply {
                                     nexusUrl.set(uri(settings.releaseUrl.orEmpty()))
@@ -173,7 +183,7 @@ internal object BuildConfig {
                                     allowInsecureProtocol.set(settings.allowInsecureProtocol)
                                 }
                             }
-                        }else{
+                        } else {
                             project.logger.warn("Private nexus settings invalid, make sure username, password, releaseUrl and snapshotUrl can not be null or empty.")
                         }
                     }
