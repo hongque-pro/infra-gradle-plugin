@@ -1,6 +1,7 @@
 package com.labijie.infra.gradle
 
 import com.labijie.infra.gradle.Utils.apply
+import com.labijie.infra.gradle.Utils.compareVersion
 import com.labijie.infra.gradle.Utils.configureFor
 import com.labijie.infra.gradle.Utils.the
 import com.labijie.infra.gradle.internal.NexusSettings
@@ -123,19 +124,24 @@ internal object BuildConfig {
             this.add("api", "org.jetbrains.kotlin:kotlin-stdlib-jdk8:${kotlinVersion}")
             this.add("api", "org.jetbrains.kotlin:kotlin-reflect:${kotlinVersion}")
 
+
+
             if (!bomVersion.isNullOrBlank()) {
+
+                val mockitoVersionSuffix = if(compareVersion(bomVersion, "2.6.4") < 0)  ":4.1.0" else ""
+
                 this.add("api", platform("com.labijie.bom:lib-dependencies:${bomVersion}"))
                 this.add("testImplementation", "org.jetbrains.kotlin:kotlin-test-junit5")
                 this.add("testImplementation", "org.junit.jupiter:junit-jupiter-api")
                 this.add("testImplementation", "org.junit.jupiter:junit-jupiter-engine")
-                this.add("testImplementation", "org.mockito:mockito-all")
+                this.add("testImplementation", "org.mockito:mockito-core${mockitoVersionSuffix}")
             } else {
                 val junitVersion = "5.8.2"
-                val mockitoVersion = "1.10.19"
+                val mockitoVersion = "4.1.0"
                 this.add("testImplementation", "org.jetbrains.kotlin:kotlin-test-junit5:${kotlinVersion}")
                 this.add("testImplementation", "org.junit.jupiter:junit-jupiter-api:${junitVersion}")
                 this.add("testImplementation", "org.junit.jupiter:junit-jupiter-engine:${junitVersion}")
-                this.add("testImplementation", "org.mockito:mockito-all:${mockitoVersion}")
+                this.add("testImplementation", "org.mockito:mockito-core:${mockitoVersion}")
             }
             /**
             testImplementation "org.jetbrains.kotlin:kotlin-test-junit5:$kotlin_version"

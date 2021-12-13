@@ -4,7 +4,6 @@ import org.gradle.api.Project
 import org.gradle.api.plugins.PluginAware
 import java.io.File
 import kotlin.reflect.KClass
-import kotlin.reflect.typeOf
 
 /**
  *
@@ -43,5 +42,20 @@ object Utils {
         }else{
             File(this.projectDir, file).absolutePath
         }
+    }
+
+    fun compareVersion(version1: String, version2: String): Int {
+        val versionArray1 = version1.split("\\.").toTypedArray() //注意此处为正则匹配，不能用"."；
+        val versionArray2 = version2.split("\\.").toTypedArray()
+        var idx = 0
+        val minLength = versionArray1.size.coerceAtMost(versionArray2.size) //取最小长度值
+        var diff = 0
+        while (idx < minLength && versionArray1[idx].length - versionArray2[idx].length.also { diff = it } == 0 //先比较长度
+            && versionArray1[idx].compareTo(versionArray2[idx]).also { diff = it } == 0) { //再比较字符
+            ++idx
+        }
+        //如果已经分出大小，则直接返回，如果未分出大小，则再比较位数，有子版本的为大；
+        diff = if (diff != 0) diff else versionArray1.size - versionArray2.size
+        return diff
     }
 }
