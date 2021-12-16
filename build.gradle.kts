@@ -14,7 +14,7 @@ plugins {
 
 
 group = "com.labijie.infra"
-version = "1.0.10"
+version = "1.0.11"
 
 fun getProxyMavenRepository(): String {
     val proxy: String? = System.getenv("MAVEN_PROXY")?.ifBlank { null }
