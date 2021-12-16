@@ -12,6 +12,7 @@ import com.thinkimi.gradle.MybatisGeneratorExtension
 import org.gradle.api.Action
 import org.gradle.api.Project
 import org.gradle.api.internal.provider.MissingValueException
+import org.gradle.api.plugins.JavaPlatformExtension
 import java.io.File
 import kotlin.io.path.Path
 
@@ -24,6 +25,10 @@ import kotlin.io.path.Path
 open class InfraExtension(private val project: Project) {
     companion object {
         const val Name = "infra"
+    }
+
+    private fun isBom(): Boolean {
+        return project.extensions.findByType(JavaPlatformExtension::class.java) != null
     }
 
     fun useNexusPublish() {
@@ -58,9 +63,11 @@ open class InfraExtension(private val project: Project) {
     }
 
     fun useDefault(action: Action<in ProjectProperties>) {
+        val self = this
         val properties = ProjectProperties()
         action.execute(properties)
         this.project.useDefault(
+            self.isBom(),
             properties.kotlinVersion,
             properties.jvmVersion,
             properties.includeSource,
@@ -69,7 +76,7 @@ open class InfraExtension(private val project: Project) {
         )
     }
 
-    fun usePublish(publishToGitHub:Boolean = false, action: Action<in PomInfo>) {
+    fun usePublish(publishToGitHub: Boolean = false, action: Action<in PomInfo>) {
         val pom = PomInfo()
         action.execute(pom)
 
@@ -111,10 +118,10 @@ open class InfraExtension(private val project: Project) {
         project.apply(plugin = "com.thinkimi.gradle.MybatisGenerator")
         project.dependencies.apply {
             add(config, "org.mybatis.generator:mybatis-generator-core:${generatorCoreVersion}")
-            if(enableItfswPlug){
+            if (enableItfswPlug) {
                 add(config, "com.itfsw:mybatis-generator-plugin:${itfswPluginVersion}")
             }
-            if(isMysqlDataSource){
+            if (isMysqlDataSource) {
                 add(config, "mysql:mysql-connector-java:${mysqlConnectorVersion}")
             }
         }
@@ -122,7 +129,7 @@ open class InfraExtension(private val project: Project) {
             this.configFile = project.getProjectFile(configFile)
             this.overwrite = true
             this.verbose = true
-            if(propertiesFileConfigKey.isNotBlank()) {
+            if (propertiesFileConfigKey.isNotBlank()) {
                 this.mybatisProperties = mapOf(
                     propertiesFileConfigKey to propertiesFile
                 )

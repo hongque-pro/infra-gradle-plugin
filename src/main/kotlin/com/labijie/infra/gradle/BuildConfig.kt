@@ -56,6 +56,7 @@ internal object BuildConfig {
 
 
     fun Project.useDefault(
+        isBom:Boolean = false,
         kotlinVersion: String = "1.6.0",
         jvmVersion: String = "1.8",
         includeSource: Boolean = true,
@@ -66,6 +67,10 @@ internal object BuildConfig {
             this.buildscript.repositories.apply {
                 useDefaultRepositories()
             }
+        }
+
+        if(isBom) {
+            return
         }
 
         this.tasks.withType(JavaCompile::class.java) {

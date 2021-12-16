@@ -12,9 +12,18 @@ import org.gradle.language.jvm.tasks.ProcessResources
  * @Date: 2021/12/7
  * @Description:
  */
-fun Project.infra(action: Action<in InfraExtension>){
-    this.apply(plugin="com.labijie.infra")
-    this.apply(plugin="com.github.ben-manes.versions")
+fun Project.infra(isBom: Boolean = false, action: Action<in InfraExtension>) {
+    if (isBom) {
+        this.apply(plugin = "java-platform")
+    } else {
+        this.apply(plugin = "kotlin")
+        this.apply(plugin = "kotlin-spring")
+        this.apply(plugin = "java-library")
+    }
+
+    this.apply(plugin = "com.labijie.infra")
+    this.apply(plugin = "com.github.ben-manes.versions")
+
 
     this.tasks.withType(DependencyUpdatesTask::class.java) { dependencyUpdatesTask ->
         dependencyUpdatesTask.checkConstraints = true
@@ -33,7 +42,7 @@ fun Project.infra(action: Action<in InfraExtension>){
     }
 
     val ext = this.extensions.findByName(InfraExtension.Name)
-    if(ext != null && ext is InfraExtension) {
+    if (ext != null && ext is InfraExtension) {
         this.extensions.configure(InfraExtension::class.java, action)
     }
 }
@@ -49,5 +58,5 @@ inline fun <reified C : Task> Project.configureTask(name: String, configuration:
 }
 
 fun Project.processResources(configure: ProcessResources.() -> Unit) {
-    this.configureTask(name ="processResources", configuration = configure)
+    this.configureTask(name = "processResources", configuration = configure)
 }

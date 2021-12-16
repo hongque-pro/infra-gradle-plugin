@@ -32,10 +32,6 @@ class InfraPlugin : Plugin<Project> {
     }
 
     override fun apply(target: Project) {
-
-        target.apply(plugin = "kotlin")
-        target.apply(plugin = "kotlin-spring")
-        target.apply(plugin = "java-library")
         target.extensions.create(InfraExtension.Name, InfraExtension::class.java, target)
 //        val build = target.tasks.findByName("build")
 //        if(target.parent == null && build != null) {
