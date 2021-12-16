@@ -27,8 +27,9 @@ open class InfraExtension(private val project: Project) {
         const val Name = "infra"
     }
 
+
     private fun isBom(): Boolean {
-        return project.extensions.findByType(JavaPlatformExtension::class.java) != null
+        return project.plugins.findPlugin("java-platform") != null
     }
 
     fun useNexusPublish() {

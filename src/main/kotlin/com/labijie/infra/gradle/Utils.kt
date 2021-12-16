@@ -12,6 +12,8 @@ import kotlin.reflect.KClass
  * @Description:
  */
 object Utils {
+    val initedProjects = mutableSetOf<Project>()
+
     inline fun <reified T : Any> Project.configureFor(clazz: Class<T>, noinline configuration: T.() -> Unit): Unit =
         @Suppress("deprecation")
         clazz.let { type ->

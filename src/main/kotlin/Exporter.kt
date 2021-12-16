@@ -1,9 +1,12 @@
 import com.github.benmanes.gradle.versions.updates.DependencyUpdatesTask
 import com.labijie.infra.gradle.InfraExtension
+import com.labijie.infra.gradle.Utils
 import com.labijie.infra.gradle.Utils.apply
+import com.labijie.infra.gradle.Utils.configureFor
 import org.gradle.api.Action
 import org.gradle.api.Project
 import org.gradle.api.Task
+import org.gradle.api.plugins.JavaPlatformExtension
 import org.gradle.language.jvm.tasks.ProcessResources
 
 /**
@@ -13,34 +16,38 @@ import org.gradle.language.jvm.tasks.ProcessResources
  * @Description:
  */
 fun Project.infra(isBom: Boolean = false, action: Action<in InfraExtension>) {
-    if (isBom) {
-        this.apply(plugin = "java-platform")
-    } else {
-        this.apply(plugin = "kotlin")
-        this.apply(plugin = "kotlin-spring")
-        this.apply(plugin = "java-library")
-    }
+    if(!Utils.initedProjects.contains(this)) {
+        Utils.initedProjects.add(this)
+        this.apply(plugin = "com.labijie.infra")
+        this.apply(plugin = "com.github.ben-manes.versions")
+        if (isBom) {
+            this.apply(plugin = "java-platform")
+            this.configureFor(JavaPlatformExtension::class.java) {
+                this.allowDependencies()
+            }
+        } else {
+            this.apply(plugin = "kotlin")
+            this.apply(plugin = "kotlin-spring")
+            this.apply(plugin = "java-library")
+        }
 
-    this.apply(plugin = "com.labijie.infra")
-    this.apply(plugin = "com.github.ben-manes.versions")
 
-
-    this.tasks.withType(DependencyUpdatesTask::class.java) { dependencyUpdatesTask ->
-        dependencyUpdatesTask.checkConstraints = true
-        dependencyUpdatesTask.resolutionStrategy { strategyWithCurrent ->
-            strategyWithCurrent.componentSelection { current ->
-                current.all { c ->
-                    val rejected = listOf("alpha", "beta", "rc", "cr", "m", "preview", "b", "ea")
-                        .map { qualifier -> Regex("(?i).*[.-]$qualifier[.\\d-+]*") }
-                        .any { it.matches(c.candidate.version) }
-                    if (rejected) {
-                        c.reject("Release candidate")
+        this.tasks.withType(DependencyUpdatesTask::class.java) { dependencyUpdatesTask ->
+            dependencyUpdatesTask.checkConstraints = true
+            dependencyUpdatesTask.resolutionStrategy { strategyWithCurrent ->
+                strategyWithCurrent.componentSelection { current ->
+                    current.all { c ->
+                        val rejected = listOf("alpha", "beta", "rc", "cr", "m", "preview", "b", "ea")
+                            .map { qualifier -> Regex("(?i).*[.-]$qualifier[.\\d-+]*") }
+                            .any { it.matches(c.candidate.version) }
+                        if (rejected) {
+                            c.reject("Release candidate")
+                        }
                     }
                 }
             }
         }
     }
-
     val ext = this.extensions.findByName(InfraExtension.Name)
     if (ext != null && ext is InfraExtension) {
         this.extensions.configure(InfraExtension::class.java, action)
