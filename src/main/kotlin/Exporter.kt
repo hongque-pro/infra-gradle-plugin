@@ -1,9 +1,10 @@
 import com.github.benmanes.gradle.versions.updates.DependencyUpdatesTask
 import com.labijie.infra.gradle.InfraExtension
 import com.labijie.infra.gradle.Utils.apply
-import com.labijie.infra.gradle.Utils.configureFor
 import org.gradle.api.Action
 import org.gradle.api.Project
+import org.gradle.api.Task
+import org.gradle.language.jvm.tasks.ProcessResources
 
 /**
  *
@@ -35,4 +36,18 @@ fun Project.infra(action: Action<in InfraExtension>){
     if(ext != null && ext is InfraExtension) {
         this.extensions.configure(InfraExtension::class.java, action)
     }
+}
+
+fun Project.getPropertyOrCmdArgs(propertyAndEnvVarName: String, cmdArgName: String): String? {
+    val project = this
+    val propertyValue = project.findProperty(propertyAndEnvVarName)?.toString()
+    return (System.getProperty(cmdArgName) ?: propertyValue) ?: System.getenv(propertyAndEnvVarName)?.ifEmpty { null }
+}
+
+inline fun <reified C : Task> Project.configureTask(name: String, configuration: C.() -> Unit) {
+    (this.tasks.getByName(name) as C).configuration()
+}
+
+fun Project.processResources(configure: ProcessResources.() -> Unit) {
+    this.configureTask(name ="processResources", configuration = configure)
 }

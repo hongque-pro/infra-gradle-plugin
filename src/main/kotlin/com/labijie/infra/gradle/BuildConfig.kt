@@ -6,6 +6,7 @@ import com.labijie.infra.gradle.Utils.configureFor
 import com.labijie.infra.gradle.Utils.the
 import com.labijie.infra.gradle.internal.NexusSettings
 import com.labijie.infra.gradle.internal.PomInfo
+import getPropertyOrCmdArgs
 import io.github.gradlenexus.publishplugin.NexusPublishExtension
 import org.gradle.api.Project
 import org.gradle.api.artifacts.dsl.RepositoryHandler
@@ -27,25 +28,14 @@ internal object BuildConfig {
         return proxy ?: "https://maven.aliyun.com/nexus/content/groups/public/"
     }
 
-    fun Project.canBeSign(): Boolean {
+    private fun Project.canBeSign(): Boolean {
         val project = this
         return project.findProperty("signing.password").isNotNullOrBlank() &&
                 project.findProperty("signing.secretKeyRingFile").isNotNullOrBlank() &&
                 project.findProperty("signing.keyId").isNotNullOrBlank()
     }
 
-    fun Project.getStringProperty(propertyName: String, defaultValue: String? = null): String? {
-        val v = this.findProperty(propertyName)?.toString()
-        return v ?: defaultValue
-    }
-
-    fun Project.getPropertyOrCmdArgs(propertyName: String, cmdArgName: String): String? {
-        val project = this
-        val propertyValue = project.getStringProperty(propertyName)
-        return (System.getProperty(cmdArgName) ?: propertyValue) ?: System.getenv(propertyName)?.ifEmpty { null }
-    }
-
-    fun RepositoryHandler.useDefaultRepositories(useMavenProxy: Boolean = true) {
+    private fun RepositoryHandler.useDefaultRepositories(useMavenProxy: Boolean = true) {
         mavenLocal()
         if (useMavenProxy) {
             maven {
@@ -106,9 +96,9 @@ internal object BuildConfig {
 
         val useP = if (proxy.equals("true", ignoreCase = true)) {
             true
-        } else if (proxy.equals("false", ignoreCase = true)){
+        } else if (proxy.equals("false", ignoreCase = true)) {
             false
-        }else{
+        } else {
             null
         }
 
@@ -128,7 +118,7 @@ internal object BuildConfig {
 
             if (!bomVersion.isNullOrBlank()) {
 
-                val mockitoVersionSuffix = if(compareVersion(bomVersion, "2.6.4") < 0)  ":4.1.0" else ""
+                val mockitoVersionSuffix = if (compareVersion(bomVersion, "2.6.4") < 0) ":4.1.0" else ""
 
                 this.add("api", platform("com.labijie.bom:lib-dependencies:${bomVersion}"))
                 this.add("testImplementation", "org.jetbrains.kotlin:kotlin-test-junit5")
@@ -198,8 +188,7 @@ internal object BuildConfig {
                 it.connectTimeout.set(settings.connectTimeout)
                 it.clientTimeout.set(settings.clientTimeout)
 
-                it.transitionCheckOptions {
-                    options->
+                it.transitionCheckOptions { options ->
                     // We have many artifacts so Maven Central takes a long time on its compliance checks. This sets
                     // the timeout for waiting for the repository to close to a comfortable 50 minutes.
                     options.maxRetries.set(settings.checkRetry)
@@ -228,29 +217,30 @@ internal object BuildConfig {
                         name.set(info.projectName ?: project.name)
                         description.set(info.description)
                         url.set(info.projectUrl)
-                        licenses { l ->
-                            l.license {
-                                name.set(info.licenseName)
-                                url.set(info.licenseUrl)
+                        licenses { spec ->
+                            spec.license { l ->
+                                l.name.set(info.licenseName)
+                                l.url.set(info.licenseUrl)
                             }
                         }
-                        developers { d ->
-                            d.developer {
-                                it.id.set(info.developerName)
-                                it.name.set(info.developerName)
-                                it.email.set(info.developerMail)
+                        developers { spec ->
+                            spec.developer { d ->
+                                d.id.set(info.developerName)
+                                d.name.set(info.developerName)
+                                d.email.set(info.developerMail)
                             }
 
                         }
                         scm {
-                            it.url.set(info.projectUrl)
-                            it.connection.set(info.githubScmUrl)
-                            it.developerConnection.set(info.gitUrl)
+                            s->
+                            s.url.set(info.projectUrl)
+                            s.connection.set(info.githubScmUrl)
+                            s.developerConnection.set(info.gitUrl)
                         }
 
-                        versionMapping { it ->
-                            it.allVariants {strategy->
-                                strategy.fromResolutionResult()
+                        versionMapping { strategy ->
+                            strategy.allVariants { v ->
+                                v.fromResolutionResult()
                             }
                         }
                     }
