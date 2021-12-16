@@ -198,7 +198,7 @@ internal object BuildConfig {
         }
     }
 
-    fun Project.usePublishing(info: PomInfo, artifactName: ((p: Project) -> String)? = null) {
+    fun Project.usePublishing(publishToGitHub: Boolean, info: PomInfo, artifactName: ((p: Project) -> String)? = null) {
 
         this.apply(plugin = "maven-publish")
         this.apply(plugin = "signing")
@@ -244,8 +244,22 @@ internal object BuildConfig {
                             }
                         }
                     }
+                }
+            }
 
-
+            //参考: https://docs.github.com/en/actions/publishing-packages/publishing-java-packages-with-gradle
+            val organ = info.gitHubOwner
+            val repo = info.gitHubRepository
+            if(publishToGitHub && !organ.isNullOrBlank() && !repo.isNullOrBlank()){
+                this.repositories { handler->
+                    handler.maven {
+                        it.name = "GitHubPackages"
+                        it.setUrl("https://maven.pkg.github.com/${organ}/${repo}")
+                        it.credentials {credentials->
+                            credentials.username  = System.getenv("GITHUB_ACTOR")
+                            credentials.password = System.getenv("GITHUB_TOKEN")
+                        }
+                    }
                 }
             }
         }

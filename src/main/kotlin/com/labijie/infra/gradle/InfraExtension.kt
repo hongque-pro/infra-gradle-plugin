@@ -69,7 +69,7 @@ open class InfraExtension(private val project: Project) {
         )
     }
 
-    fun usePublish(action: Action<in PomInfo>) {
+    fun usePublish(publishToGitHub:Boolean = false, action: Action<in PomInfo>) {
         val pom = PomInfo()
         action.execute(pom)
 
@@ -78,7 +78,7 @@ open class InfraExtension(private val project: Project) {
         if (pom.gitUrl.isBlank()) throw MissingValueException("${pom::gitUrl.name} is missing, set in labijie publish block")
         if (pom.githubScmUrl.isBlank()) throw MissingValueException("${pom::githubScmUrl.name} is missing, set in labijie publish block")
 
-        this.project.usePublishing(pom, pom.idGeneration)
+        this.project.usePublishing(publishToGitHub, pom, pom.idGeneration)
     }
 
     /**
