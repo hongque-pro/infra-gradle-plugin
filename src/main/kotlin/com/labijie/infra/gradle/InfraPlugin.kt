@@ -1,12 +1,8 @@
 package com.labijie.infra.gradle
 
-import com.labijie.infra.gradle.InfraPlugin.Companion.execute
-import com.labijie.infra.gradle.Utils.apply
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.Task
-import org.gradle.api.tasks.Exec
-import org.gradle.api.tasks.GradleBuild
 
 /**
  *

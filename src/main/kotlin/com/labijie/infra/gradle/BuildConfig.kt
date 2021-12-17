@@ -13,6 +13,7 @@ import org.gradle.api.artifacts.dsl.RepositoryHandler
 import org.gradle.api.plugins.JavaPluginExtension
 import org.gradle.api.publish.PublishingExtension
 import org.gradle.api.publish.maven.MavenPublication
+import org.gradle.api.publish.plugins.PublishingPlugin
 import org.gradle.api.tasks.compile.JavaCompile
 import org.gradle.api.tasks.javadoc.Javadoc
 import org.gradle.api.tasks.testing.Test
@@ -54,9 +55,51 @@ internal object BuildConfig {
         }
     }
 
+    fun Project.usePublishingRepository(
+        repositoryName: String = "Nexus",
+        url: () -> String?,
+        username: () -> String?,
+        password: () -> String?
+    ) {
+
+        val p = this
+        if (!this.the(PublishingExtension::class).repositories.any { it.name == repositoryName }) {
+
+            p.configureFor(PublishingExtension::class.java) {
+                this.repositories { handler ->
+                    handler.maven {
+                        it.name = repositoryName.ifBlank { "Nexus" }
+                        it.setUrl(url().orEmpty())
+                        it.credentials { c ->
+                            c.username = username().orEmpty()
+                            c.password = password().orEmpty()
+                        }
+                    }
+                }
+            }
+        }
+
+        val tt = p.tasks.register("publishTo${repositoryName}") {task->
+            task.description = "Publishes maven publications  to the GitHub Packages."
+            task.group = PublishingPlugin.PUBLISH_TASK_GROUP
+        }
+        val mavenPublications =
+            p.the(PublishingExtension::class).publications.withType(MavenPublication::class.java)
+        mavenPublications.configureEach {
+            _->
+            val publishTask = p.tasks.named(
+                "publishMavenPublicationTo${repositoryName}Repository"
+            )
+            tt.configure {
+                it.dependsOn(publishTask)
+            }
+        }
+
+    }
+
 
     fun Project.useDefault(
-        isBom:Boolean = false,
+        isBom: Boolean = false,
         kotlinVersion: String = "1.6.0",
         jvmVersion: String = "1.8",
         includeSource: Boolean = true,
@@ -69,7 +112,7 @@ internal object BuildConfig {
             }
         }
 
-        if(isBom) {
+        if (isBom) {
             return
         }
 
@@ -147,6 +190,7 @@ internal object BuildConfig {
         }
     }
 
+
     fun Project.useNexusPublishPlugin(configure: ((repo: NexusSettings) -> Unit)? = null) {
         this.mustBeRoot("useNexusPublishPlugin")
         this.apply(plugin = "io.github.gradle-nexus.publish-plugin")
@@ -203,7 +247,8 @@ internal object BuildConfig {
         }
     }
 
-    fun Project.usePublishing(publishToGitHub: Boolean, info: PomInfo, artifactName: ((p: Project) -> String)? = null) {
+
+    fun Project.usePublishing(info: PomInfo, artifactName: ((p: Project) -> String)? = null) {
 
         this.apply(plugin = "maven-publish")
         this.apply(plugin = "signing")
@@ -236,8 +281,7 @@ internal object BuildConfig {
                             }
 
                         }
-                        scm {
-                            s->
+                        scm { s ->
                             s.url.set(info.projectUrl)
                             s.connection.set(info.githubScmUrl)
                             s.developerConnection.set(info.gitUrl)
@@ -247,22 +291,6 @@ internal object BuildConfig {
                             strategy.allVariants { v ->
                                 v.fromResolutionResult()
                             }
-                        }
-                    }
-                }
-            }
-
-            //参考: https://docs.github.com/en/actions/publishing-packages/publishing-java-packages-with-gradle
-            val organ = info.gitHubOwner
-            val repo = info.gitHubRepository
-            if(publishToGitHub && !organ.isNullOrBlank() && !repo.isNullOrBlank()){
-                this.repositories { handler->
-                    handler.maven {
-                        it.name = "GitHubPackages"
-                        it.setUrl("https://maven.pkg.github.com/${organ}/${repo}")
-                        it.credentials {credentials->
-                            credentials.username  = System.getenv("GITHUB_ACTOR")
-                            credentials.password = System.getenv("GITHUB_TOKEN")
                         }
                     }
                 }

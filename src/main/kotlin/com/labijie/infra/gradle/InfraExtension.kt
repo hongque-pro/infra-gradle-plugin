@@ -4,15 +4,22 @@ import com.google.devtools.ksp.gradle.KspExtension
 import com.labijie.infra.gradle.BuildConfig.useDefault
 import com.labijie.infra.gradle.BuildConfig.useNexusPublishPlugin
 import com.labijie.infra.gradle.BuildConfig.usePublishing
+import com.labijie.infra.gradle.BuildConfig.usePublishingRepository
 import com.labijie.infra.gradle.Utils.apply
 import com.labijie.infra.gradle.Utils.configureFor
 import com.labijie.infra.gradle.Utils.getProjectFile
+import com.labijie.infra.gradle.Utils.the
 import com.labijie.infra.gradle.internal.*
 import com.thinkimi.gradle.MybatisGeneratorExtension
+import getPropertyOrCmdArgs
 import org.gradle.api.Action
 import org.gradle.api.Project
 import org.gradle.api.internal.provider.MissingValueException
 import org.gradle.api.plugins.JavaPlatformExtension
+import org.gradle.api.publish.PublishingExtension
+import org.gradle.api.publish.maven.MavenPublication
+import org.gradle.api.publish.maven.tasks.PublishToMavenRepository
+import org.gradle.api.publish.plugins.PublishingPlugin
 import java.io.File
 import kotlin.io.path.Path
 
@@ -39,6 +46,36 @@ open class InfraExtension(private val project: Project) {
             project.logger.debug("${project.name} is not a root project, useNexusPublish skipped.")
         }
     }
+
+    fun Project.useNexus(
+        url: String? = null,
+        username: String? = null,
+        password: String? = null,
+    ) {
+        val p = this
+        this.usePublishingRepository("Nexus",
+            {
+                this.getPropertyOrCmdArgs("PUB_URL", "s") ?: url
+            },
+            {
+                this.getPropertyOrCmdArgs("PUB_USER", "u") ?: username
+            },
+            {
+                this.getPropertyOrCmdArgs("PUB_PWD", "p") ?: password
+            })
+    }
+
+    fun Project.useGitHubPackages(owner: String, repository: String) {
+        val repoName = "GitHubPackages"
+        val url = "https://maven.pkg.github.com/${owner}/${repository}"
+
+        this.usePublishingRepository(
+            repoName,
+            { url },
+            { System.getenv("GITHUB_ACTOR") },
+            { System.getenv("GITHUB_TOKEN") })
+    }
+
 
     fun useInfraOrmGenerator(version: String = "1.0.0", outputDir: String? = null, packageName: String? = null) {
         if (!project.pluginManager.hasPlugin("com.google.devtools.ksp")) {
@@ -77,7 +114,7 @@ open class InfraExtension(private val project: Project) {
         )
     }
 
-    fun usePublish(publishToGitHub: Boolean = false, action: Action<in PomInfo>) {
+    fun usePublish(action: Action<in PomInfo>) {
         val pom = PomInfo()
         action.execute(pom)
 
@@ -86,7 +123,7 @@ open class InfraExtension(private val project: Project) {
         if (pom.gitUrl.isBlank()) throw MissingValueException("${pom::gitUrl.name} is missing, set in labijie publish block")
         if (pom.githubScmUrl.isBlank()) throw MissingValueException("${pom::githubScmUrl.name} is missing, set in labijie publish block")
 
-        this.project.usePublishing(publishToGitHub, pom, pom.idGeneration)
+        this.project.usePublishing(pom, pom.idGeneration)
     }
 
     /**
