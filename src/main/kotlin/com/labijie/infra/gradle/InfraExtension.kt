@@ -39,9 +39,9 @@ open class InfraExtension(private val project: Project) {
         return project.plugins.findPlugin("java-platform") != null
     }
 
-    fun useNexusPublish() {
+    fun useNexusPublish(newMavenHost: Boolean = false) {
         if (project.parent == null) {
-            this.project.useNexusPublishPlugin()
+            this.project.useNexusPublishPlugin(newMavenHost)
         } else {
             project.logger.debug("${project.name} is not a root project, useNexusPublish skipped.")
         }

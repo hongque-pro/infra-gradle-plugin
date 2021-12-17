@@ -198,7 +198,7 @@ internal object BuildConfig {
     }
 
 
-    fun Project.useNexusPublishPlugin(configure: ((repo: NexusSettings) -> Unit)? = null) {
+    fun Project.useNexusPublishPlugin(newHost:Boolean, configure: ((repo: NexusSettings) -> Unit)? = null) {
         this.mustBeRoot("useNexusPublishPlugin")
         this.apply(plugin = "io.github.gradle-nexus.publish-plugin")
         if (this.extensions.findByName("nexusPublishing") != null) {
@@ -213,6 +213,10 @@ internal object BuildConfig {
                 it.repositories.apply {
                     sonatype { st ->
                         st.apply {
+                            if(newHost){
+                                nexusUrl.set(uri("https://s01.oss.sonatype.org/service/local/"))
+                                snapshotRepositoryUrl.set(uri("https://s01.oss.sonatype.org/content/repositories/snapshots/"))
+                            }
                             if (u != null) {
                                 username.set(u)
                                 if (p != null) {
