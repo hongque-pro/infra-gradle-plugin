@@ -106,11 +106,7 @@ open class InfraExtension(private val project: Project) {
         action.execute(properties)
         this.project.useDefault(
             self.isBom(),
-            properties.kotlinVersion,
-            properties.jvmVersion,
-            properties.includeSource,
-            properties.useMavenProxy,
-            properties.infraBomVersion
+            properties
         )
     }
 

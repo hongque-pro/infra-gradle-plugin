@@ -6,6 +6,7 @@ import com.labijie.infra.gradle.Utils.configureFor
 import com.labijie.infra.gradle.Utils.the
 import com.labijie.infra.gradle.internal.NexusSettings
 import com.labijie.infra.gradle.internal.PomInfo
+import com.labijie.infra.gradle.internal.ProjectProperties
 import getPropertyOrCmdArgs
 import io.github.gradlenexus.publishplugin.NexusPublishExtension
 import org.gradle.api.Project
@@ -36,12 +37,23 @@ internal object BuildConfig {
                 project.findProperty("signing.keyId").isNotNullOrBlank()
     }
 
-    private fun RepositoryHandler.useDefaultRepositories(useMavenProxy: Boolean = true) {
+    private fun RepositoryHandler.useDefaultRepositories(
+        useMavenProxy: Boolean = true,
+        githubPackages: Map<String, MutableSet<String>>
+    ) {
         mavenLocal()
         if (useMavenProxy) {
             maven {
                 it.setUrl(getProxyMavenRepository())
                 it.isAllowInsecureProtocol = true
+            }
+        }
+        githubPackages.forEach { o ->
+            o.value.forEach { r ->
+                maven { m ->
+                    m.setUrl("https://maven.pkg.github.com/${o}/${r}")
+                    m.name = "githubPackages"
+                }
             }
         }
         mavenCentral()
@@ -79,14 +91,13 @@ internal object BuildConfig {
             }
         }
 
-        val tt = p.tasks.register("publishTo${repositoryName}") {task->
+        val tt = p.tasks.register("publishTo${repositoryName}") { task ->
             task.description = "Publishes maven publications  to the GitHub Packages."
             task.group = PublishingPlugin.PUBLISH_TASK_GROUP
         }
         val mavenPublications =
             p.the(PublishingExtension::class).publications.withType(MavenPublication::class.java)
-        mavenPublications.configureEach {
-            _->
+        mavenPublications.configureEach { _ ->
             val publishTask = p.tasks.named(
                 "publishMavenPublicationTo${repositoryName}Repository"
             )
@@ -99,26 +110,28 @@ internal object BuildConfig {
 
 
     fun Project.useDefault(
-        isBom: Boolean = false,
-        kotlinVersion: String = "1.6.0",
-        jvmVersion: String = "1.8",
-        includeSource: Boolean = true,
-        useMavenProxy: Boolean = true,
-        bomVersion: String? = null
+        isBom: Boolean,
+        projectProperties: ProjectProperties
     ) {
-        if (this.parent == null) {
-            this.buildscript.repositories.apply {
-                useDefaultRepositories()
-            }
+        val proxy = this.getPropertyOrCmdArgs("USE_PROXY", "proxy").orEmpty()
+
+        val useP = if (proxy.equals("true", ignoreCase = true)) {
+            true
+        } else if (proxy.equals("false", ignoreCase = true)) {
+            false
+        } else {
+            null
         }
+
+        this.repositories.useDefaultRepositories(useP ?: projectProperties.useMavenProxy, projectProperties.githubRepositories)
 
         if (isBom) {
             return
         }
 
         this.tasks.withType(JavaCompile::class.java) {
-            it.sourceCompatibility = jvmVersion
-            it.targetCompatibility = jvmVersion
+            it.sourceCompatibility = projectProperties.jvmVersion
+            it.targetCompatibility = projectProperties.jvmVersion
         }
 
 
@@ -131,7 +144,7 @@ internal object BuildConfig {
 
         this.configureFor(JavaPluginExtension::class.java) {
             withJavadocJar()
-            if (includeSource) {
+            if (projectProperties.includeSource) {
                 withSourcesJar()
             }
         }
@@ -140,17 +153,7 @@ internal object BuildConfig {
             it.isFailOnError = false
         }
 
-        val proxy = this.getPropertyOrCmdArgs("USE_PROXY", "proxy").orEmpty()
 
-        val useP = if (proxy.equals("true", ignoreCase = true)) {
-            true
-        } else if (proxy.equals("false", ignoreCase = true)) {
-            false
-        } else {
-            null
-        }
-
-        this.repositories.useDefaultRepositories(useP ?: useMavenProxy)
 
         if (this.tasks.findByName("test") != null) {
             this.tasks.withType(Test::class.java) {
@@ -159,16 +162,17 @@ internal object BuildConfig {
         }
 
         this.dependencies.apply {
-            this.add("api", "org.jetbrains.kotlin:kotlin-stdlib-jdk8:${kotlinVersion}")
-            this.add("api", "org.jetbrains.kotlin:kotlin-reflect:${kotlinVersion}")
+            this.add("api", "org.jetbrains.kotlin:kotlin-stdlib-jdk8:${projectProperties.kotlinVersion}")
+            this.add("api", "org.jetbrains.kotlin:kotlin-reflect:${projectProperties.kotlinVersion}")
 
 
 
-            if (!bomVersion.isNullOrBlank()) {
+            if (projectProperties.infraBomVersion.isNotBlank()) {
 
-                val mockitoVersionSuffix = if (compareVersion(bomVersion, "2.6.4") < 0) ":4.1.0" else ""
+                val mockitoVersionSuffix =
+                    if (compareVersion(projectProperties.infraBomVersion, "2.6.4") < 0) ":4.1.0" else ""
 
-                this.add("api", platform("com.labijie.bom:lib-dependencies:${bomVersion}"))
+                this.add("api", platform("com.labijie.bom:lib-dependencies:${projectProperties.infraBomVersion}"))
                 this.add("testImplementation", "org.jetbrains.kotlin:kotlin-test-junit5")
                 this.add("testImplementation", "org.junit.jupiter:junit-jupiter-api")
                 this.add("testImplementation", "org.junit.jupiter:junit-jupiter-engine")
@@ -176,7 +180,10 @@ internal object BuildConfig {
             } else {
                 val junitVersion = "5.8.2"
                 val mockitoVersion = "4.1.0"
-                this.add("testImplementation", "org.jetbrains.kotlin:kotlin-test-junit5:${kotlinVersion}")
+                this.add(
+                    "testImplementation",
+                    "org.jetbrains.kotlin:kotlin-test-junit5:${projectProperties.kotlinVersion}"
+                )
                 this.add("testImplementation", "org.junit.jupiter:junit-jupiter-api:${junitVersion}")
                 this.add("testImplementation", "org.junit.jupiter:junit-jupiter-engine:${junitVersion}")
                 this.add("testImplementation", "org.mockito:mockito-core:${mockitoVersion}")
