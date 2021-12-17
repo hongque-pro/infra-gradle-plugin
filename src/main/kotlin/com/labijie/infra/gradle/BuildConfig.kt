@@ -51,8 +51,8 @@ internal object BuildConfig {
         githubPackages.forEach { o ->
             o.value.forEach { r ->
                 maven { m ->
-                    m.setUrl("https://maven.pkg.github.com/${o}/${r}")
-                    m.name = "${o}.${r}"
+                    m.setUrl("https://maven.pkg.github.com/${o.key}/${r}")
+                    m.name = "${o.key}.${r}"
                 }
             }
         }
