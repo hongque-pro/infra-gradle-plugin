@@ -3,6 +3,8 @@ package com.labijie.infra.gradle
 import org.gradle.api.Project
 import org.gradle.api.plugins.PluginAware
 import java.io.File
+import java.util.*
+import java.util.concurrent.ConcurrentHashMap
 import kotlin.reflect.KClass
 
 /**
@@ -12,7 +14,7 @@ import kotlin.reflect.KClass
  * @Description:
  */
 object Utils {
-    val initedProjects = mutableSetOf<Project>()
+    val initedProjects = ConcurrentHashMap<Project, Properties>()
 
     inline fun <reified T : Any> Project.configureFor(clazz: Class<T>, noinline configuration: T.() -> Unit): Unit =
         @Suppress("deprecation")

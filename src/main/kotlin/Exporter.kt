@@ -8,6 +8,7 @@ import org.gradle.api.Project
 import org.gradle.api.Task
 import org.gradle.api.plugins.JavaPlatformExtension
 import org.gradle.language.jvm.tasks.ProcessResources
+import java.util.*
 
 /**
  *
@@ -16,8 +17,17 @@ import org.gradle.language.jvm.tasks.ProcessResources
  * @Description:
  */
 fun Project.infra(isBom: Boolean = false, action: Action<in InfraExtension>) {
-    if(!Utils.initedProjects.contains(this)) {
-        Utils.initedProjects.add(this)
+    if (!Utils.initedProjects.contains(this)) {
+
+        val props =  Utils.initedProjects.getOrPut(this) { Properties() }
+
+        val file = project.rootProject.file("local.properties")
+        if (file.isFile && file.exists()) {
+            project.rootProject.file("local.properties").inputStream().use { it ->
+                props.load(it)
+            }
+        }
+
         this.apply(plugin = "com.labijie.infra")
         this.apply(plugin = "com.github.ben-manes.versions")
         if (isBom) {
@@ -54,10 +64,13 @@ fun Project.infra(isBom: Boolean = false, action: Action<in InfraExtension>) {
     }
 }
 
-fun Project.getPropertyOrCmdArgs(propertyAndEnvVarName: String, cmdArgName: String): String? {
+fun Project.findPropertyAndLocal(propertyName: String): String? {
+    return Utils.initedProjects.getOrDefault(project, null)?.get(propertyName)?.toString() ?: project.findProperty(propertyName)?.toString()
+}
+
+fun Project.getPropertyOrCmdArgs(propertyAndEnvVarName: String, cmdArgName: String? = null): String? {
     val project = this
-    val propertyValue = project.findProperty(propertyAndEnvVarName)?.toString()
-    return (System.getProperty(cmdArgName) ?: propertyValue) ?: System.getenv(propertyAndEnvVarName)?.ifEmpty { null }
+    return (System.getProperty(cmdArgName ?: propertyAndEnvVarName) ?: System.getenv(propertyAndEnvVarName)?.ifEmpty { null }) ?: project.findPropertyAndLocal(propertyAndEnvVarName)
 }
 
 inline fun <reified C : Task> Project.configureTask(name: String, configuration: C.() -> Unit) {

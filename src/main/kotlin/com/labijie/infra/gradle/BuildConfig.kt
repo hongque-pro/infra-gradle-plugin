@@ -7,6 +7,7 @@ import com.labijie.infra.gradle.Utils.the
 import com.labijie.infra.gradle.internal.NexusSettings
 import com.labijie.infra.gradle.internal.PomInfo
 import com.labijie.infra.gradle.internal.ProjectProperties
+import findPropertyAndLocal
 import getPropertyOrCmdArgs
 import io.github.gradlenexus.publishplugin.NexusPublishExtension
 import org.gradle.api.Project
@@ -19,7 +20,6 @@ import org.gradle.api.tasks.compile.JavaCompile
 import org.gradle.api.tasks.javadoc.Javadoc
 import org.gradle.api.tasks.testing.Test
 import org.gradle.plugins.signing.SigningExtension
-import java.lang.StringBuilder
 
 internal object BuildConfig {
     private fun Any?.isNotNullOrBlank(): Boolean {
@@ -33,9 +33,9 @@ internal object BuildConfig {
 
     private fun Project.canBeSign(): Boolean {
         val project = this
-        return project.findProperty("signing.password").isNotNullOrBlank() &&
-                project.findProperty("signing.secretKeyRingFile").isNotNullOrBlank() &&
-                project.findProperty("signing.keyId").isNotNullOrBlank()
+        return project.findPropertyAndLocal("signing.password").isNotNullOrBlank() &&
+                project.findPropertyAndLocal("signing.secretKeyRingFile").isNotNullOrBlank() &&
+                project.findPropertyAndLocal("signing.keyId").isNotNullOrBlank()
     }
 
     private fun RepositoryHandler.useDefaultRepositories(
@@ -55,8 +55,8 @@ internal object BuildConfig {
         mavenCentral()
 
         if(githubPackages.isNotEmpty()) {
-            val username = (project.findProperty("GPR_USER") as String?) ?: System.getenv("GPR_USER")
-            val password = (project.findProperty("GPR_TOKEN") as String?) ?: System.getenv("GPR_TOKEN")
+            val username = project.getPropertyOrCmdArgs("GPR_USER", "GPR_USER")
+            val password = project.getPropertyOrCmdArgs("GPR_TOKEN", "GPR_TOKEN")
 
             if (username.isNotNullOrBlank() && password.isNotNullOrBlank()) {
                 var count = 0
@@ -337,8 +337,6 @@ internal object BuildConfig {
 
             if (project.canBeSign()) {
                 this.sign(publishing.publications.findByName("maven"))
-            } else {
-                println("Signing information missing/incomplete for ${project.name}")
             }
         }
     }
