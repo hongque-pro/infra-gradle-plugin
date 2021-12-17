@@ -72,10 +72,9 @@ GPR_TOKEN=<PTA OR GITHUB_TOKEN>
 ```
 *持环境变量或者 java 的 -D 参数配置*
 
-**GPR_TOKEN** 是消费仓库中的包必须的 PTA， 关于如何生成 PTA 参考这里:   
-https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/creating-a-personal-access-token   
+> **GPR_TOKEN** 是消费仓库中的包必须的 PTA， 关于如何生成 PTA 参考这里:   
+> https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/creating-a-personal-access-token   
 
----
 
 ### 发布包到 GitHubPackages   
 在 gradle.build.kts 中添加以下内容:
