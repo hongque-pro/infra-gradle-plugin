@@ -54,37 +54,31 @@ internal object BuildConfig {
 
         mavenCentral()
 
-        val username = (project.findProperty("GPR_USER") as String?) ?: System.getenv("GPR_USER")
-        val password = (project.findProperty("GPR_TOKEN") as String?) ?: System.getenv("GPR_TOKEN")
+        if(githubPackages.isNotEmpty()) {
+            val username = (project.findProperty("GPR_USER") as String?) ?: System.getenv("GPR_USER")
+            val password = (project.findProperty("GPR_TOKEN") as String?) ?: System.getenv("GPR_TOKEN")
 
-
-        if(username.isNotNullOrBlank() && password.isNotNullOrBlank()) {
-            var count = 0
-            githubPackages.forEach { (key, values) ->
-                values.forEach { r ->
-                    maven { m ->
-                        count++
-                        val url = "https://maven.pkg.github.com/${key}/${r}"
-                        m.setUrl(url)
-                        m.name = "${key}.${r}"
-                        m.credentials {
-                            it.username = username
-                            it.password = password
+            if (username.isNotNullOrBlank() && password.isNotNullOrBlank()) {
+                var count = 0
+                githubPackages.forEach { (key, values) ->
+                    values.forEach { r ->
+                        maven { m ->
+                            count++
+                            val url = "https://maven.pkg.github.com/${key}/${r}"
+                            m.setUrl(url)
+                            m.name = "${key}.${r}"
+                            m.credentials {
+                                it.username = username
+                                it.password = password
+                            }
                         }
                     }
                 }
-            }
 
-            project.logger.info("$count github package added.")
-        }else{
-            val envs = System.getenv()
-            val envText = StringBuilder().appendLine("env:")
-                .apply {
-                    envs.forEach { (t, u) ->
-                        this.appendLine("$t: $u")
-                    }
-                }
-            project.logger.warn("Github credentials not found, skip github packages.${System.lineSeparator()}${envText}")
+                project.logger.info("$count github package added.")
+            } else {
+                project.logger.warn("Github credentials not found, skip github packages.")
+            }
         }
 
         gradlePluginPortal()
