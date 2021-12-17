@@ -19,6 +19,7 @@ import org.gradle.api.tasks.compile.JavaCompile
 import org.gradle.api.tasks.javadoc.Javadoc
 import org.gradle.api.tasks.testing.Test
 import org.gradle.plugins.signing.SigningExtension
+import java.lang.StringBuilder
 
 internal object BuildConfig {
     private fun Any?.isNotNullOrBlank(): Boolean {
@@ -49,12 +50,18 @@ internal object BuildConfig {
                 it.isAllowInsecureProtocol = true
             }
         }
-        githubPackages.forEach { (key, values) ->
-            values.forEach { r ->
+        var username = System.getenv("GITHUB_ACTOR")
+        var password = System.getenv("GITHUB_TOKEN")
 
-                val username = (System.getenv("GITHUB_ACTOR") ?: project.findProperty("GPR_USER") as String?) ?: System.getenv("GPR_USER")
-                val password = (System.getenv("GITHUB_TOKEN") ?: project.findProperty("GPR_TOKEN") as String?) ?: System.getenv("GPR_TOKEN")
-                if(username.isNotNullOrBlank() && password.isNotNullOrBlank()) {
+        if(username.isNullOrBlank() || password.isNullOrBlank()){
+            username = (project.findProperty("GPR_USER") as String?) ?: System.getenv("GPR_USER")
+            password = (project.findProperty("GPR_TOKEN") as String?) ?: System.getenv("GPR_TOKEN")
+        }
+
+
+        if(username.isNotNullOrBlank() && password.isNotNullOrBlank()) {
+            githubPackages.forEach { (key, values) ->
+                values.forEach { r ->
                     maven { m ->
                         val url = "https://maven.pkg.github.com/${key}/${r}"
                         m.setUrl(url)
@@ -66,6 +73,15 @@ internal object BuildConfig {
                     }
                 }
             }
+        }else{
+            val envs = System.getenv()
+            val envText = StringBuilder().appendLine("env:")
+                .apply {
+                    envs.forEach { (t, u) ->
+                        this.appendLine("$t: $u")
+                    }
+                }
+            project.logger.warn("Github credentials not found, skip github packages.${System.lineSeparator()}${envText}")
         }
         mavenCentral()
         gradlePluginPortal()
