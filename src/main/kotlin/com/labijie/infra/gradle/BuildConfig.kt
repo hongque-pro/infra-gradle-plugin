@@ -278,6 +278,7 @@ internal object BuildConfig {
                         name.set(info.projectName ?: project.name)
                         description.set(info.description)
                         url.set(info.projectUrl)
+                        version = project.version.toString()
                         licenses { spec ->
                             spec.license { l ->
                                 l.name.set(info.licenseName)
