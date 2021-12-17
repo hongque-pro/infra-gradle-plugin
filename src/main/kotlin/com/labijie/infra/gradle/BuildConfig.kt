@@ -50,19 +50,20 @@ internal object BuildConfig {
                 it.isAllowInsecureProtocol = true
             }
         }
-        var username = System.getenv("GITHUB_ACTOR")
-        var password = System.getenv("GITHUB_TOKEN")
 
-        if(username.isNullOrBlank() || password.isNullOrBlank()){
-            username = (project.findProperty("GPR_USER") as String?) ?: System.getenv("GPR_USER")
-            password = (project.findProperty("GPR_TOKEN") as String?) ?: System.getenv("GPR_TOKEN")
-        }
+
+        mavenCentral()
+
+        val username = (project.findProperty("GPR_USER") as String?) ?: System.getenv("GPR_USER")
+        val password = (project.findProperty("GPR_TOKEN") as String?) ?: System.getenv("GPR_TOKEN")
 
 
         if(username.isNotNullOrBlank() && password.isNotNullOrBlank()) {
+            var count = 0
             githubPackages.forEach { (key, values) ->
                 values.forEach { r ->
                     maven { m ->
+                        count++
                         val url = "https://maven.pkg.github.com/${key}/${r}"
                         m.setUrl(url)
                         m.name = "${key}.${r}"
@@ -73,6 +74,8 @@ internal object BuildConfig {
                     }
                 }
             }
+
+            project.logger.info("$count github package added.")
         }else{
             val envs = System.getenv()
             val envText = StringBuilder().appendLine("env:")
@@ -83,9 +86,8 @@ internal object BuildConfig {
                 }
             project.logger.warn("Github credentials not found, skip github packages.${System.lineSeparator()}${envText}")
         }
-        mavenCentral()
+
         gradlePluginPortal()
-        maven { it.setUrl("https://repo.spring.io/plugins-release") }
     }
 
     private fun Project.mustBeRoot(methodName: String) {
