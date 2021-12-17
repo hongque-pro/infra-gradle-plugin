@@ -38,6 +38,7 @@ internal object BuildConfig {
     }
 
     private fun RepositoryHandler.useDefaultRepositories(
+        project: Project,
         useMavenProxy: Boolean = true,
         githubPackages: Map<String, MutableSet<String>>
     ) {
@@ -48,11 +49,21 @@ internal object BuildConfig {
                 it.isAllowInsecureProtocol = true
             }
         }
-        githubPackages.forEach { o ->
-            o.value.forEach { r ->
-                maven { m ->
-                    m.setUrl("https://maven.pkg.github.com/${o.key}/${r}")
-                    m.name = "${o.key}.${r}"
+        githubPackages.forEach { (key, values) ->
+            values.forEach { r ->
+
+                val username = (System.getenv("GITHUB_ACTOR") ?: project.findProperty("GPR_USER") as String?) ?: System.getenv("GPR_USER")
+                val password = (System.getenv("GITHUB_TOKEN") ?: project.findProperty("GPR_TOKEN") as String?) ?: System.getenv("GPR_TOKEN")
+                if(username.isNotNullOrBlank() && password.isNotNullOrBlank()) {
+                    maven { m ->
+                        val url = "https://maven.pkg.github.com/${key}/${r}"
+                        m.setUrl(url)
+                        m.name = "${key}.${r}"
+                        m.credentials {
+                            it.username = username
+                            it.password = password
+                        }
+                    }
                 }
             }
         }
@@ -123,7 +134,7 @@ internal object BuildConfig {
             null
         }
 
-        this.repositories.useDefaultRepositories(useP ?: projectProperties.useMavenProxy, projectProperties.githubRepositories)
+        this.repositories.useDefaultRepositories(this,useP ?: projectProperties.useMavenProxy, projectProperties.githubRepositories)
 
         if (isBom) {
             return
