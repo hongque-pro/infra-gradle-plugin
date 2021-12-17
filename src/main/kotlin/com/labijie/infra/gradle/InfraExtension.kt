@@ -55,13 +55,13 @@ open class InfraExtension(private val project: Project) {
         val p = this
         this.usePublishingRepository("Nexus",
             {
-                this.getPropertyOrCmdArgs("PUB_URL", "s") ?: url
+                p.getPropertyOrCmdArgs("PUB_URL", "s") ?: url
             },
             {
-                this.getPropertyOrCmdArgs("PUB_USER", "u") ?: username
+                p.getPropertyOrCmdArgs("PUB_USER", "u") ?: username
             },
             {
-                this.getPropertyOrCmdArgs("PUB_PWD", "p") ?: password
+                p.getPropertyOrCmdArgs("PUB_PWD", "p") ?: password
             })
     }
 
