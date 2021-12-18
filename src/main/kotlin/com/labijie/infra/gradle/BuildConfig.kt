@@ -298,7 +298,7 @@ internal object BuildConfig {
                     artifactId = artifact
                     from((components.findByName("javaPlatform") ?: components.findByName("java")))
                     pom.apply {
-                        name.set(info.projectName ?: project.name)
+                        name.set(info.projectName ?: artifact)
                         description.set(info.description)
                         url.set(info.projectUrl)
                         version = project.version.toString()
