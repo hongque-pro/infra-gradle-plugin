@@ -8,18 +8,13 @@ import com.labijie.infra.gradle.BuildConfig.usePublishingRepository
 import com.labijie.infra.gradle.Utils.apply
 import com.labijie.infra.gradle.Utils.configureFor
 import com.labijie.infra.gradle.Utils.getProjectFile
-import com.labijie.infra.gradle.Utils.the
-import com.labijie.infra.gradle.internal.*
+import com.labijie.infra.gradle.internal.PomInfo
+import com.labijie.infra.gradle.internal.ProjectProperties
 import com.thinkimi.gradle.MybatisGeneratorExtension
 import getPropertyOrCmdArgs
 import org.gradle.api.Action
 import org.gradle.api.Project
 import org.gradle.api.internal.provider.MissingValueException
-import org.gradle.api.plugins.JavaPlatformExtension
-import org.gradle.api.publish.PublishingExtension
-import org.gradle.api.publish.maven.MavenPublication
-import org.gradle.api.publish.maven.tasks.PublishToMavenRepository
-import org.gradle.api.publish.plugins.PublishingPlugin
 import java.io.File
 import kotlin.io.path.Path
 
@@ -39,7 +34,7 @@ open class InfraExtension(private val project: Project) {
         return project.plugins.findPlugin("java-platform") != null
     }
 
-    fun useNexusPublish(newMavenHost: Boolean = false) {
+    fun useNexusPublish(newMavenHost: Boolean = true) {
         if (project.parent == null) {
             this.project.useNexusPublishPlugin(newMavenHost)
         } else {
