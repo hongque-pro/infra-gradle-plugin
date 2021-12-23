@@ -17,7 +17,7 @@ class NexusSettings(var username: String, var password: String?) {
     var connectTimeout = Duration.ofMinutes(5)
     var clientTimeout = Duration.ofMinutes(5)
     var checkRetry: Int = 300
-    var checkInterval = Duration.ofSeconds(10)
+    var checkInterval = Duration.ofSeconds(5)
 
     fun isValid(): Boolean {
         return this.username.isNotBlank() && password.isNullOrBlank() && !releaseUrl.isNullOrBlank() && !snapshotUrl.isNullOrBlank()
