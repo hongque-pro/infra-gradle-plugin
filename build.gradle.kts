@@ -2,9 +2,9 @@
 plugins {
 
     kotlin("jvm") version Constants.kotlinVersion
-    id("com.gradle.plugin-publish") version "0.18.0"
+    id("com.gradle.plugin-publish") version Constants.gradlePublishPluginVersion
     if(Constants.testPlugin) {
-        id("com.labijie.infra") version "1.0.8" apply false
+        id("com.labijie.infra") version Constants.projectVersion apply false
     }
     id("maven-publish")
     id("signing")
@@ -14,7 +14,7 @@ plugins {
 
 
 group = "com.labijie.infra"
-version = "1.0.11"
+version = Constants.projectVersion
 
 fun getProxyMavenRepository(): String {
     val proxy: String? = System.getenv("MAVEN_PROXY")?.ifBlank { null }
@@ -29,7 +29,6 @@ repositories {
     }
     mavenCentral()
     gradlePluginPortal()
-    maven { setUrl("https://repo.spring.io/plugins-release") }
 }
 
 tasks.withType(JavaCompile::class.java) {
