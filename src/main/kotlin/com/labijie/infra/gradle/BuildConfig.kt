@@ -157,16 +157,10 @@ internal object BuildConfig {
             it.targetCompatibility = projectProperties.jvmVersion
         }
 
-
-//        this.tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile::class.java) {
-//            kotlinOptions {
-//                jvmTarget = jvmVersion
-//            }
-//        }
-
-
         this.configureFor(JavaPluginExtension::class.java) {
-            withJavadocJar()
+            if(projectProperties.includeDocument) {
+                withJavadocJar()
+            }
             if (projectProperties.includeSource) {
                 withSourcesJar()
             }
