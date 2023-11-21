@@ -9,8 +9,7 @@
 
 ## 快速开始
 
-```kotlin
-
+```groovy
 plugins {
     id("com.labijie.infra") version "your version"
 }
