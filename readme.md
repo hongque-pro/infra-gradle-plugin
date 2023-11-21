@@ -109,7 +109,7 @@ allprojects {
 
 
 
-### 发布 Maven 包
+## 发布 Maven 包
 在 gradle.build.kts 中添加以下内容:   
 
 ```kotlin
