@@ -1,11 +1,15 @@
 
 plugins {
-    id("org.gradle.kotlin.kotlin-dsl") version "2.1.7"
-    id("org.gradle.kotlin.embedded-kotlin") version "2.1.7"
+    id("org.gradle.kotlin.kotlin-dsl") version "4.1.2"
+    id("org.gradle.kotlin.embedded-kotlin") version "4.1.2"
 }
 
 fun getProxyMavenRepository(): String {
     val proxy: String? = System.getenv("MAVEN_PROXY")?.ifBlank { null }
+    if(proxy != null)
+    {
+        System.out.printf("Find environment variable 'MAVEN_PROXY' for maven mirror.")
+    }
     return proxy ?: "https://maven.aliyun.com/nexus/content/groups/public/"
 }
 

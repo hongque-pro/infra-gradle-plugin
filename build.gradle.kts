@@ -1,3 +1,7 @@
+import com.gradle.publish.PluginBundleExtension
+
+group = "com.labijie.infra"
+version = Constants.projectVersion
 
 plugins {
 
@@ -7,14 +11,54 @@ plugins {
         id("com.labijie.infra") version Constants.projectVersion apply false
     }
     id("maven-publish")
-    id("signing")
+    //id("signing")
     id("java-gradle-plugin")
     id("java-library")
 }
 
+gradlePlugin {
+    plugins {
+        create("InfraPlugin") {
+            id = "com.labijie.infra"
+            displayName = "infra gradle plugin"
+            description = "Build toolkit to help you configure gradle project"
+            implementationClass = "com.labijie.infra.gradle.InfraPlugin"
+            tags = listOf("infra", "labijie", "template")
+        }
+    }
 
-group = "com.labijie.infra"
-version = Constants.projectVersion
+    website = "https://github.com/hongque-pro/infra-gradle-plugin"
+    vcsUrl = "https://github.com/hongque-pro/infra-gradle-plugin.git"
+}
+
+//for com.gradle.plugin-publish
+//refer: https://docs.gradle.org/current/userguide/publishing_gradle_plugins.html
+publishing {
+    repositories {
+        maven {
+            name = "Folder"
+            url = uri("../local-plugin-repository")
+        }
+    }
+}
+
+
+//refer: https://docs.gradle.org/current/userguide/signing_plugin.html
+//signing {
+//    publishing.publications.forEach {
+//        System.out.println(it.name)
+//    }
+//    isRequired =  false
+//}
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_11
+    targetCompatibility = JavaVersion.VERSION_11
+    withJavadocJar()
+    withJavadocJar()
+}
+
+
 
 fun getProxyMavenRepository(): String {
     val proxy: String? = System.getenv("MAVEN_PROXY")?.ifBlank { null }
@@ -32,13 +76,8 @@ repositories {
 }
 
 tasks.withType(JavaCompile::class.java) {
-    sourceCompatibility = "1.8"
-    targetCompatibility = "1.8"
-}
-
-configure<JavaPluginExtension> {
-    withJavadocJar()
-    withSourcesJar()
+    sourceCompatibility = "11"
+    targetCompatibility = "11"
 }
 
 tasks.withType(Javadoc::class.java) {
@@ -61,34 +100,9 @@ dependencies {
     api("org.jetbrains.kotlin:kotlin-allopen:${Constants.kotlinVersion}")
     api("org.jetbrains.kotlin:kotlin-gradle-plugin:${Constants.kotlinVersion}")
     api("${Constants.mybatisPluginLib}:${Constants.mybatisPluginVersion}")
+    //use for task gradle dependencyUpdates
     api("com.github.ben-manes:gradle-versions-plugin:${Constants.checkUpdatePlugin}")
 
-    compileOnly("com.google.devtools.ksp:com.google.devtools.ksp.gradle.plugin:${Constants.kspPluginVersion}")
+    compileOnly("com.google.devtools.ksp:symbol-processing-gradle-plugin:${Constants.kspPluginVersion}")
 }
 
-
-configure<com.gradle.publish.PluginBundleExtension> {
-    website = "https://github.com/hongque-pro/infra-gradle-plugin"
-    vcsUrl = "https://github.com/hongque-pro/infra-gradle-plugin.git"
-    tags = listOf("infra", "labijie", "template")
-}
-
-configure<GradlePluginDevelopmentExtension> {
-    plugins {
-        create("InfraPlugin") {
-            id = "com.labijie.infra"
-            displayName = "infra gradle plugin"
-            description = "Build toolkit to help you configure gradle project"
-            implementationClass = "com.labijie.infra.gradle.InfraPlugin"
-        }
-    }
-}
-
-configure<PublishingExtension> {
-    repositories {
-        maven {
-            name = "localPluginRepository"
-            url = uri("../local-plugin-repository")
-        }
-    }
-}

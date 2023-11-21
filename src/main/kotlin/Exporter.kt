@@ -1,5 +1,6 @@
 import com.github.benmanes.gradle.versions.updates.DependencyUpdatesTask
-import com.labijie.infra.gradle.InfraExtension
+import com.github.benmanes.gradle.versions.updates.resolutionstrategy.ComponentSelectionWithCurrent
+import com.labijie.infra.gradle.InfraPluginExtension
 import com.labijie.infra.gradle.Utils
 import com.labijie.infra.gradle.Utils.apply
 import com.labijie.infra.gradle.Utils.configureFor
@@ -16,7 +17,7 @@ import java.util.*
  * @Date: 2021/12/7
  * @Description:
  */
-fun Project.infra(isBom: Boolean = false, action: Action<in InfraExtension>) {
+fun Project.infra(isBom: Boolean = false, action: Action<in InfraPluginExtension>) {
     if (!Utils.initedProjects.contains(this)) {
 
         val props =  Utils.initedProjects.getOrPut(this) { Properties() }
@@ -45,11 +46,13 @@ fun Project.infra(isBom: Boolean = false, action: Action<in InfraExtension>) {
         this.tasks.withType(DependencyUpdatesTask::class.java) { dependencyUpdatesTask ->
             dependencyUpdatesTask.checkConstraints = true
             dependencyUpdatesTask.resolutionStrategy { strategyWithCurrent ->
+
                 strategyWithCurrent.componentSelection { current ->
-                    current.all { c ->
+                    current.all { c: ComponentSelectionWithCurrent ->
                         val rejected = listOf("alpha", "beta", "rc", "cr", "m", "preview", "b", "ea")
                             .map { qualifier -> Regex("(?i).*[.-]$qualifier[.\\d-+]*") }
-                            .any { it.matches(c.candidate.version) }
+
+                            .any { it.matches( c.candidate.version) }
                         if (rejected) {
                             c.reject("Release candidate")
                         }
@@ -58,9 +61,9 @@ fun Project.infra(isBom: Boolean = false, action: Action<in InfraExtension>) {
             }
         }
     }
-    val ext = this.extensions.findByName(InfraExtension.Name)
-    if (ext != null && ext is InfraExtension) {
-        this.extensions.configure(InfraExtension::class.java, action)
+    val ext = this.extensions.findByName(InfraPluginExtension.Name)
+    if (ext != null && ext is InfraPluginExtension) {
+        this.extensions.configure(InfraPluginExtension::class.java, action)
     }
 }
 

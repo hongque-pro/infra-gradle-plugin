@@ -15,7 +15,9 @@ import getPropertyOrCmdArgs
 import org.gradle.api.Action
 import org.gradle.api.Project
 import org.gradle.api.internal.provider.MissingValueException
+import org.gradle.api.model.ObjectFactory
 import java.io.File
+import javax.inject.Inject
 import kotlin.io.path.Path
 
 /**
@@ -24,7 +26,7 @@ import kotlin.io.path.Path
  * @Date: 2021/12/7
  * @Description:
  */
-open class InfraExtension(private val project: Project) {
+open class InfraPluginExtension @Inject constructor(private val project: Project, private val objectFactory: ObjectFactory) {
     companion object {
         const val Name = "infra"
     }
@@ -138,7 +140,7 @@ open class InfraExtension(private val project: Project) {
         propertiesFile: String,
         isMysqlDataSource: Boolean = true,
         enableItfswPlug: Boolean = false,
-        generatorCoreVersion: String = "1.4.0",
+        generatorCoreVersion: String = "1.4.2",
         itfswPluginVersion: String = "1.3.10",
         mysqlConnectorVersion: String = "8.0.27",
         propertiesFileConfigKey: String = "propertiesFile"
@@ -158,10 +160,12 @@ open class InfraExtension(private val project: Project) {
             this.configFile = project.getProjectFile(configFile)
             this.overwrite = true
             this.verbose = true
+            this.mybatisProperties = objectFactory.mapProperty(String::class.java, String::class.java)
+
             if (propertiesFileConfigKey.isNotBlank()) {
-                this.mybatisProperties = mapOf(
+                this.mybatisProperties.set(mapOf(
                     propertiesFileConfigKey to propertiesFile
-                )
+                ))
             }
         }
     }

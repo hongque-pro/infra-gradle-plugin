@@ -8,8 +8,8 @@ package com.labijie.infra.gradle.internal
  */
 class ProjectProperties {
     var infraBomVersion: String = "2.6.5"
-    var kotlinVersion: String = "1.6.0"
-    var jvmVersion: String = "1.8"
+    var kotlinVersion: String = "1.9.20"
+    var jvmVersion: String = "17"
     var includeSource: Boolean = false
     var includeDocument: Boolean = false
     var useMavenProxy: Boolean = true

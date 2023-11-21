@@ -215,6 +215,9 @@ internal object BuildConfig {
     }
 
 
+    /**
+     * @param newHost Users registered in Sonatype after 24 February 2021 need to set this value to true
+     */
     fun Project.useNexusPublishPlugin(newHost:Boolean, configure: ((repo: NexusSettings) -> Unit)? = null) {
         this.mustBeRoot("useNexusPublishPlugin")
         this.apply(plugin = "io.github.gradle-nexus.publish-plugin")

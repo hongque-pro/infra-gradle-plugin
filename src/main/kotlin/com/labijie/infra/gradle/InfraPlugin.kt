@@ -11,7 +11,6 @@ import org.gradle.api.Task
  * @Description:
  */
 class InfraPlugin : Plugin<Project> {
-
     companion object {
         fun Task.execute() {
             this.actions.forEach {
@@ -28,27 +27,6 @@ class InfraPlugin : Plugin<Project> {
     }
 
     override fun apply(target: Project) {
-        target.extensions.create(InfraExtension.Name, InfraExtension::class.java, target)
-//        val build = target.tasks.findByName("build")
-//        if(target.parent == null && build != null) {
-//            target.tasks.create("fastBuild", Exec::class.java) {
-//                it.group = "build"
-//                val args = mutableListOf<String>()
-//                args.add("gradle")
-//                args.add("build")
-//                args.add("--parallel")
-//                args.add("-x test")
-//                if(target.childProjects.any {t->
-//                    t.value.tasks.findByName("kspKotlin") != null
-//                }){
-//                    args.add("-x kspKotlin")
-//                }
-//                target.gradle.gradleHomeDir
-//                GradleBuild().apply {
-//                    setTasks(tasks)
-//                }
-//                it.commandLine(*args.toTypedArray())
-//            }
-//        }
+        target.extensions.create(InfraPluginExtension.Name, InfraPluginExtension::class.java, target)
     }
 }
