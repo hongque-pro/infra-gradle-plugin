@@ -2,19 +2,16 @@ package com.labijie.infra.gradle
 
 import com.google.devtools.ksp.gradle.KspExtension
 import com.labijie.infra.gradle.BuildConfig.useDefault
+import com.labijie.infra.gradle.BuildConfig.useGitHubPackagesPub
+import com.labijie.infra.gradle.BuildConfig.useGithubAccount
 import com.labijie.infra.gradle.BuildConfig.useNexusPublishPlugin
-import com.labijie.infra.gradle.BuildConfig.usePublishing
-import com.labijie.infra.gradle.BuildConfig.usePublishingRepository
 import com.labijie.infra.gradle.Utils.apply
 import com.labijie.infra.gradle.Utils.configureFor
 import com.labijie.infra.gradle.Utils.getProjectFile
-import com.labijie.infra.gradle.internal.PomInfo
 import com.labijie.infra.gradle.internal.ProjectProperties
 import com.thinkimi.gradle.MybatisGeneratorExtension
-import getPropertyOrCmdArgs
 import org.gradle.api.Action
 import org.gradle.api.Project
-import org.gradle.api.internal.provider.MissingValueException
 import org.gradle.api.model.ObjectFactory
 import java.io.File
 import javax.inject.Inject
@@ -30,47 +27,19 @@ open class InfraPluginExtension @Inject constructor(private val project: Project
     companion object {
         const val Name = "infra"
     }
-
-
     private fun isBom(): Boolean {
         return project.plugins.findPlugin("java-platform") != null
     }
 
-    fun useNexusPublish(newMavenHost: Boolean = true) {
+    /**
+     *  @param newMavenHost Users registered in Sonatype after 24 February 2021 need to set this value to true
+     */
+    fun usePublishPlugin(newMavenHost: Boolean = true) {
         if (project.parent == null) {
             this.project.useNexusPublishPlugin(newMavenHost)
         } else {
-            project.logger.debug("${project.name} is not a root project, useNexusPublish skipped.")
+            this.project.rootProject.useNexusPublishPlugin(newMavenHost)
         }
-    }
-
-    fun Project.useNexus(
-        url: String? = null,
-        username: String? = null,
-        password: String? = null,
-    ) {
-        val p = this
-        this.usePublishingRepository("Nexus",
-            {
-                p.getPropertyOrCmdArgs("PUB_URL", "s") ?: url
-            },
-            {
-                p.getPropertyOrCmdArgs("PUB_USER", "u") ?: username
-            },
-            {
-                p.getPropertyOrCmdArgs("PUB_PWD", "p") ?: password
-            })
-    }
-
-    fun Project.useGitHubPackages(owner: String, repository: String) {
-        val repoName = "GitHubPackages"
-        val url = "https://maven.pkg.github.com/${owner}/${repository}"
-
-        this.usePublishingRepository(
-            repoName,
-            { url },
-            { System.getenv("GITHUB_ACTOR") },
-            { System.getenv("GITHUB_TOKEN") })
     }
 
 
@@ -107,16 +76,13 @@ open class InfraPluginExtension @Inject constructor(private val project: Project
         )
     }
 
-    fun usePublish(action: Action<in PomInfo>) {
-        val pom = PomInfo()
-        action.execute(pom)
+    fun useGithubAccount(user: String, key: String) {
+        this.project.useGithubAccount(user, key)
+    }
 
-        if (pom.description.isBlank()) throw MissingValueException("${pom::description.name} is missing, set in labijie publish block")
-        if (pom.projectUrl.isBlank()) throw MissingValueException("${pom::projectUrl.name} is missing, set in labijie publish block")
-        if (pom.gitUrl.isBlank()) throw MissingValueException("${pom::gitUrl.name} is missing, set in labijie publish block")
-        if (pom.githubScmUrl.isBlank()) throw MissingValueException("${pom::githubScmUrl.name} is missing, set in labijie publish block")
-
-        this.project.usePublishing(pom, pom.idGeneration)
+    fun publishing(action: Action<in PublishingBuilder>) {
+        val builder = PublishingBuilder(this.project)
+        action.execute(builder)
     }
 
     /**
@@ -140,9 +106,9 @@ open class InfraPluginExtension @Inject constructor(private val project: Project
         propertiesFile: String,
         isMysqlDataSource: Boolean = true,
         enableItfswPlug: Boolean = false,
-        generatorCoreVersion: String = "1.4.2",
-        itfswPluginVersion: String = "1.3.10",
-        mysqlConnectorVersion: String = "8.0.27",
+        generatorCoreVersion: String = DEFAULT_MYBATIS_GENERATOR_CORE_VERSION,
+        itfswPluginVersion: String = DEFAULT_MYBATIS_GENERATOR_PLUGIN_VERSION,
+        mysqlConnectorVersion: String = DEFAULT_MYSQL_CONNECTOR_VERSION,
         propertiesFileConfigKey: String = "propertiesFile"
     ) {
         val config = "mybatisGenerator"

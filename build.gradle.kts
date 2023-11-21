@@ -11,6 +11,8 @@ plugins {
         id("com.labijie.infra") version Constants.projectVersion apply false
     }
     id("maven-publish")
+
+    //for debug comment this line to disable sign
     //id("signing")
     id("java-gradle-plugin")
     id("java-library")

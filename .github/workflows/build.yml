@@ -6,8 +6,8 @@ env:
   GPG_KEY_ID: ${{ secrets.MAVEN_SIGN_KEY_ID }}
   GPG_KEY: ${{ secrets.MAVEN_SIGN_KEY }}
   GPG_PWD: ${{ secrets.MAVEN_SIGN_KEY_PWD }}
-  PUB_KEY: ${{ secrets.GRADLE_PUB_KEY }}
-  PUB_SECRECT: ${{ secrets.GRADLE_PUB_SECRET }}
+  GRADLE_KEY: ${{ secrets.GRADLE_PUB_KEY }}
+  GRADLE_SECRET: ${{ secrets.GRADLE_PUB_SECRET }}
 on:
   workflow_dispatch:
   release:
@@ -15,16 +15,14 @@ on:
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
-
     steps:
       - uses: actions/checkout@v4
       - name: Set up JDK 11
         uses: actions/setup-java@v3
         with:
           distribution: 'microsoft'
-          java-version: 11.0
+          java-version: 11
       - name: PGP Prepare
         run: |
           echo "Create .gpg key"
@@ -37,4 +35,4 @@ jobs:
       - name: Build with Gradle
         run: gradle build
       - name: Publish to Gradle Plugin Portal
-        run: gradle publishPlugins -Pgradle.publish.key=$PUB_KEY -Pgradle.publish.secret=$PUB_SECRECT
+        run: gradle publishPlugins -Pgradle.publish.key=$GRADLE_KEY -Pgradle.publish.secret=GRADLE_SECRET

@@ -71,9 +71,9 @@ fun Project.findPropertyAndLocal(propertyName: String): String? {
     return Utils.initedProjects.getOrDefault(project, null)?.get(propertyName)?.toString() ?: project.findProperty(propertyName)?.toString()
 }
 
-fun Project.getPropertyOrCmdArgs(propertyAndEnvVarName: String, cmdArgName: String? = null): String? {
+fun Project.getPropertyOrCmdArgs(envVarName: String, cmdArgName: String? = null): String? {
     val project = this
-    return (System.getProperty(cmdArgName ?: propertyAndEnvVarName) ?: System.getenv(propertyAndEnvVarName)?.ifEmpty { null }) ?: project.findPropertyAndLocal(propertyAndEnvVarName)
+    return (System.getProperty(cmdArgName ?: envVarName) ?: System.getenv(envVarName)?.ifEmpty { null }) ?: project.findPropertyAndLocal(cmdArgName ?: envVarName)
 }
 
 inline fun <reified C : Task> Project.configureTask(name: String, configuration: C.() -> Unit) {
