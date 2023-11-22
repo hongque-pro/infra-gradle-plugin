@@ -9,7 +9,7 @@
 
 ## 快速开始
 
-```kotlin-dsl
+```groovy
 plugins {
     id("com.labijie.infra") version "your version"
 }
@@ -80,7 +80,7 @@ gradle build -Dgpr.user=<your github account> -Dgpr.key=<PTA OR GITHUB_TOKEN>
 
 #### 4. 直接在 `build.gradle.kts` 中指定 (不推荐)
 
-```kotlin
+```groovy
 infra {
     useGithubAccount("<your github account>", "<PTA OR GITHUB_TOKEN>")
 }
@@ -95,7 +95,7 @@ infra {
 ### 使用 GitHub Packages 中的包
 
 在 gradle.build.kts 中添加以下内容:
-```kotlin
+```groovy
 allprojects {
     infra {
         useDefault {
@@ -111,7 +111,7 @@ allprojects {
 ## 发布 Maven 包
 在 gradle.build.kts 中添加以下内容:   
 
-```kotlin
+```groovy
 subprojects {
     infra(isBom = true) {
         publishing {
