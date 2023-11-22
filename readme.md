@@ -1,7 +1,7 @@
 # Infra-Gradle-Plugin
 
 ![gradle-plugin-portal](https://img.shields.io/gradle-plugin-portal/v/com.labijie.infra?logo=gradle)
-![workflow status](https://img.shields.io/github/workflow/status/hongque-pro/infra-gradle-plugin/Gradle%20Build%20And%20Release/main?logo=github)
+![workflow status](https://img.shields.io/github/actions/workflow/status/hongque-pro/infra-gradle-plugin/build.yml?branch=main)
 ![license](https://img.shields.io/github/license/hongque-pro/infra-orm?style=flat-square)
 
 该插件旨在简化 Gradle 项目配置，几行代码就可以迅速开始一个项目。   
