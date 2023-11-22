@@ -9,7 +9,7 @@
 
 ## 快速开始
 
-```kts
+```kotlin-dsl
 plugins {
     id("com.labijie.infra") version "your version"
 }
