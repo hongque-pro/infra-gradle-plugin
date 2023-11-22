@@ -161,3 +161,26 @@ signing.secretKeyRingFile=
 ```
 具体请参考 Sign 插件文档：   
 https://docs.gradle.org/current/userguide/signing_plugin.html
+
+
+## Maven 仓库镜像
+
+默认情况下，插件会自动使用  maven 仓库加速：
+- 使用阿里云镜像加速: https://maven.aliyun.com/nexus/content/groups/public/
+- 你可以通过环境变量 `MAVEN_PROXY` 或在 gradle.properties / local.properties 中添加 `maven.proxy` 配置，指定 nexus 仓库地址，来使用你的私有 maven 仓库。
+
+> 插件在检测一些环境变量自动关闭 maven 仓库加速：
+> 
+> - GITHUB_JOB
+> - NO_MAVEN_PROXY
+> 
+> 注意，这些环境变量只要存在就会关闭镜像加速，无论它们是什么值。
+
+你可以强制禁止 maven 仓库加速行为：
+```groovy
+infra {
+    useDefault {
+        useMavenProxy = false
+    }
+}
+```

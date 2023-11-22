@@ -30,8 +30,9 @@ internal object BuildConfig {
         return !(this == null || this.toString().isBlank())
     }
 
-    private fun getProxyMavenRepository(): String {
-        val proxy: String? = System.getenv("MAVEN_PROXY")?.ifBlank { null }
+    private fun Project.getProxyMavenRepository(): String {
+
+        val proxy: String? = this.getPropertyOrCmdArgs("MAVEN_PROXY", "maven.proxy")?.ifBlank { null }
         return proxy ?: "https://maven.aliyun.com/nexus/content/groups/public/"
     }
 
@@ -58,7 +59,7 @@ internal object BuildConfig {
         mavenLocal()
         if (useMavenProxy) {
             maven {
-                it.setUrl(getProxyMavenRepository())
+                it.setUrl(project.getProxyMavenRepository())
                 it.isAllowInsecureProtocol = true
             }
         }
@@ -106,17 +107,7 @@ internal object BuildConfig {
         isBom: Boolean,
         projectProperties: ProjectProperties
     ) {
-        val proxy = this.getPropertyOrCmdArgs("USE_PROXY", "proxy").orEmpty()
-
-        val useP = if (proxy.equals("true", ignoreCase = true)) {
-            true
-        } else if (proxy.equals("false", ignoreCase = true)) {
-            false
-        } else {
-            null
-        }
-
-        this.repositories.useDefaultRepositories(this,useP ?: projectProperties.useMavenProxy, projectProperties.githubRepositories)
+        this.repositories.useDefaultRepositories(this,projectProperties.useMavenProxy, projectProperties.githubRepositories)
 
         if (isBom) {
             return

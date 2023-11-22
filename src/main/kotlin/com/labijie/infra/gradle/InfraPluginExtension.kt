@@ -2,7 +2,6 @@ package com.labijie.infra.gradle
 
 import com.google.devtools.ksp.gradle.KspExtension
 import com.labijie.infra.gradle.BuildConfig.useDefault
-import com.labijie.infra.gradle.BuildConfig.useGitHubPackagesPub
 import com.labijie.infra.gradle.BuildConfig.useGithubAccount
 import com.labijie.infra.gradle.BuildConfig.useNexusPublishPlugin
 import com.labijie.infra.gradle.Utils.apply
@@ -27,6 +26,7 @@ open class InfraPluginExtension @Inject constructor(private val project: Project
     companion object {
         const val Name = "infra"
     }
+
     private fun isBom(): Boolean {
         return project.plugins.findPlugin("java-platform") != null
     }
@@ -42,14 +42,20 @@ open class InfraPluginExtension @Inject constructor(private val project: Project
         }
     }
 
-
-    fun useInfraOrmGenerator(version: String = "1.0.0", outputDir: String? = null, packageName: String? = null) {
+    fun useKsp(vararg kspDependencies: String) {
         if (!project.pluginManager.hasPlugin("com.google.devtools.ksp")) {
             project.apply(plugin = "com.google.devtools.ksp")
         }
         project.dependencies.apply {
-            this.add("ksp", "com.labijie.orm:exposed-generator:${version}")
+            kspDependencies.forEach {dp->
+                add("ksp", dp)
+            }
         }
+
+    }
+
+    fun useInfraOrmGenerator(version: String = "1.0.0", outputDir: String? = null, packageName: String? = null) {
+        useKsp("com.labijie.orm:exposed-generator:${version}")
         if (!outputDir.isNullOrBlank() || !packageName.isNullOrBlank()) {
             project.configureFor(KspExtension::class.java) {
                 if (!outputDir.isNullOrBlank()) {

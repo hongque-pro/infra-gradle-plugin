@@ -1,5 +1,3 @@
-import com.gradle.publish.PluginBundleExtension
-
 group = "com.labijie.infra"
 version = Constants.projectVersion
 
@@ -107,4 +105,6 @@ dependencies {
 
     compileOnly("com.google.devtools.ksp:symbol-processing-gradle-plugin:${Constants.kspPluginVersion}")
 }
+
+registerPubTasks()
 

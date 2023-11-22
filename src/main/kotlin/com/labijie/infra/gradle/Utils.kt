@@ -16,6 +16,16 @@ import kotlin.reflect.KClass
 object Utils {
     val initedProjects = ConcurrentHashMap<Project, Properties>()
 
+    fun isGithubAction(): Boolean
+    {
+        return !System.getenv("GITHUB_JOB").isNullOrBlank()
+    }
+
+    fun isDisableMavenPRoxy(): Boolean
+    {
+        return !System.getenv("NO_MAVEN_PROXY").isNullOrBlank()
+    }
+
     inline fun <reified T : Any> Project.configureFor(clazz: Class<T>, noinline configuration: T.() -> Unit): Unit =
         @Suppress("deprecation")
         clazz.let { type ->

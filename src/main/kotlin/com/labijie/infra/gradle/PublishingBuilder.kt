@@ -29,9 +29,7 @@ class PublishingBuilder internal constructor(private val project: Project) {
     }
 
     fun toGithubPackages(owner: String,
-                         repository: String,
-                         user: String? = null,
-                         key: String? = null) {
+                         repository: String) {
         project.useGitHubPackagesPub(owner, repository)
     }
 
