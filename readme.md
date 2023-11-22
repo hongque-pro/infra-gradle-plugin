@@ -9,7 +9,7 @@
 
 ## 快速开始
 
-```text
+```kts
 plugins {
     id("com.labijie.infra") version "your version"
 }
