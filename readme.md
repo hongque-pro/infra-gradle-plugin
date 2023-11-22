@@ -47,7 +47,7 @@ dependencies {
 支持从 local.properties 文件中使用配置，从 git 排除 local.properties 以实现本地化配置：
 >适用于本地保存密钥，无需担心被提交到 git 中.
 
-```kotlin
+```groovy
 val propertyName = XXXXXX
 findPropertyAndLocal(propertyName)
 ```
