@@ -30,17 +30,17 @@ fun Project.infra(isBom: Boolean = false, action: Action<in InfraPluginExtension
         }
 
         this.apply(plugin = "com.labijie.infra")
-        this.apply(plugin = "com.github.ben-manes.versions")
         if (isBom) {
             this.apply(plugin = "java-platform")
             this.configureFor(JavaPlatformExtension::class.java) {
                 this.allowDependencies()
             }
         } else {
-            this.apply(plugin = "kotlin")
+            this.apply(plugin = "org.jetbrains.kotlin.jvm")
             this.apply(plugin = "kotlin-spring")
             this.apply(plugin = "java-library")
         }
+        this.apply(plugin = "com.github.ben-manes.versions")
 
 
         this.tasks.withType(DependencyUpdatesTask::class.java) { dependencyUpdatesTask ->

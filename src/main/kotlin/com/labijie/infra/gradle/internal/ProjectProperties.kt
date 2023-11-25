@@ -15,6 +15,7 @@ class ProjectProperties {
     var infraBomVersion: String = DEFAULT_INFRA_BOM_VERSION
     var kotlinVersion: String = DEFAULT_KOTLIN_VERSION
     var jvmVersion: String = DEFAULT_JDK_VERSION
+    var junitVersion: String = DEFAULT_JDK_VERSION
     var includeSource: Boolean = false
     var includeDocument: Boolean = false
     var useMavenProxy: Boolean = !Utils.isGithubAction() && !Utils.isDisableMavenPRoxy()

@@ -2,6 +2,7 @@ package com.labijie.infra.gradle
 
 import org.gradle.api.Project
 import org.gradle.api.plugins.PluginAware
+import org.jetbrains.kotlin.gradle.plugin.extraProperties
 import java.io.File
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
@@ -15,6 +16,7 @@ import kotlin.reflect.KClass
  */
 object Utils {
     val initedProjects = ConcurrentHashMap<Project, Properties>()
+    val configuredProjects = ConcurrentHashMap<Project, Boolean>()
 
     fun isGithubAction(): Boolean
     {
@@ -24,6 +26,18 @@ object Utils {
     fun isDisableMavenPRoxy(): Boolean
     {
         return !System.getenv("NO_MAVEN_PROXY").isNullOrBlank()
+    }
+
+    fun Project.setIsInfraBom(isBom: Boolean) {
+        project.extraProperties["infraIsBom"] = isBom
+    }
+
+    fun Project.isInfraBomProject(): Boolean {
+        if(project.extraProperties.has("infraIsBom"))
+        {
+            return project.extraProperties.get("infraIsBom") as Boolean
+        }
+        return false;
     }
 
     inline fun <reified T : Any> Project.configureFor(clazz: Class<T>, noinline configuration: T.() -> Unit): Unit =

@@ -27,6 +27,6 @@ class InfraPlugin : Plugin<Project> {
     }
 
     override fun apply(target: Project) {
-        target.extensions.create(InfraPluginExtension.Name, InfraPluginExtension::class.java, target)
+       target.extensions.create(InfraPluginExtension.Name, InfraPluginExtension::class.java, target)
     }
 }

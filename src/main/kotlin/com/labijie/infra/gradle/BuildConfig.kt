@@ -1,5 +1,6 @@
 package com.labijie.infra.gradle
 
+import com.labijie.infra.gradle.BuildConfig.useDefault
 import com.labijie.infra.gradle.Utils.apply
 import com.labijie.infra.gradle.Utils.configureFor
 import com.labijie.infra.gradle.Utils.the
@@ -9,6 +10,7 @@ import com.labijie.infra.gradle.internal.ProjectProperties
 import findPropertyAndLocal
 import getPropertyOrCmdArgs
 import io.github.gradlenexus.publishplugin.NexusPublishExtension
+import org.gradle.api.JavaVersion
 import org.gradle.api.Project
 import org.gradle.api.artifacts.dsl.RepositoryHandler
 import org.gradle.api.plugins.JavaPluginExtension
@@ -18,8 +20,16 @@ import org.gradle.api.publish.plugins.PublishingPlugin
 import org.gradle.api.tasks.compile.JavaCompile
 import org.gradle.api.tasks.javadoc.Javadoc
 import org.gradle.api.tasks.testing.Test
+import org.gradle.internal.impldep.org.apache.maven.model.Plugin
+import org.gradle.jvm.toolchain.JavaLanguageVersion
+import org.gradle.jvm.toolchain.JavaToolchainService
 import org.gradle.plugins.signing.SigningExtension
+import org.jetbrains.kotlin.gradle.plugin.KotlinPlatformJvmPlugin
+import org.jetbrains.kotlin.gradle.plugin.PLUGIN_CLASSPATH_CONFIGURATION_NAME
 import org.jetbrains.kotlin.gradle.plugin.extraProperties
+import org.jetbrains.kotlin.gradle.plugin.getKotlinPluginVersion
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+import org.jetbrains.kotlin.gradle.tasks.UsesKotlinJavaToolchain
 
 internal object BuildConfig {
 
@@ -63,8 +73,6 @@ internal object BuildConfig {
                 it.isAllowInsecureProtocol = true
             }
         }
-
-
         mavenCentral()
 
         if(githubPackages.isNotEmpty()) {
@@ -103,12 +111,12 @@ internal object BuildConfig {
         }
     }
 
+
     fun Project.useDefault(
         isBom: Boolean,
         projectProperties: ProjectProperties
     ) {
         this.repositories.useDefaultRepositories(this,projectProperties.useMavenProxy, projectProperties.githubRepositories)
-
         if (isBom) {
             return
         }
@@ -116,6 +124,19 @@ internal object BuildConfig {
         this.tasks.withType(JavaCompile::class.java) {
             it.sourceCompatibility = projectProperties.jvmVersion
             it.targetCompatibility = projectProperties.jvmVersion
+        }
+
+        this.configureFor(JavaPluginExtension::class.java) {
+            sourceCompatibility = JavaVersion.toVersion(projectProperties.jvmVersion)
+            targetCompatibility = JavaVersion.toVersion(projectProperties.jvmVersion)
+        }
+
+        val service = project.extensions.getByType(JavaToolchainService::class.java)
+        val customLauncher = service.launcherFor {
+            it.languageVersion.set(JavaLanguageVersion.of(projectProperties.jvmVersion))
+        }
+        project.tasks.withType(UsesKotlinJavaToolchain::class.java).configureEach {
+            it.kotlinJavaToolchain.toolchain.use(customLauncher)
         }
 
         this.configureFor(JavaPluginExtension::class.java) {
@@ -140,10 +161,9 @@ internal object BuildConfig {
         }
 
         this.dependencies.apply {
-            this.add("api", "org.jetbrains.kotlin:kotlin-stdlib-jdk8:${projectProperties.kotlinVersion}")
-            this.add("api", "org.jetbrains.kotlin:kotlin-reflect:${projectProperties.kotlinVersion}")
-
-
+            this.add("api", platform("org.jetbrains.kotlin:kotlin-bom:${projectProperties.kotlinVersion}"))
+            this.add("api", "org.jetbrains.kotlin:kotlin-stdlib-jdk8")
+            this.add("api", "org.jetbrains.kotlin:kotlin-reflect")
 
             if (projectProperties.infraBomVersion.isNotBlank()) {
                 this.add("api", platform("com.labijie.bom:lib-dependencies:${projectProperties.infraBomVersion}"))
@@ -153,14 +173,13 @@ internal object BuildConfig {
                 this.add("testImplementation", "org.mockito:mockito-core")
                 this.add("testImplementation", "org.mockito:mockito-junit-jupiter")
             } else {
-                val junitVersion = "5.9.3"
+                val junitVersion = "5.10.1"
                 val mockitoVersion = "5.7.0"
-                this.add(
-                    "testImplementation",
-                    "org.jetbrains.kotlin:kotlin-test-junit5:${projectProperties.kotlinVersion}"
-                )
-                this.add("testImplementation", "org.junit.jupiter:junit-jupiter-api:${junitVersion}")
-                this.add("testImplementation", "org.junit.jupiter:junit-jupiter-engine:${junitVersion}")
+                this.add("api", platform("org.junit:junit-bom:${junitVersion}"))
+
+                this.add("testImplementation", "org.jetbrains.kotlin:kotlin-test-junit5")
+                this.add("testImplementation", "org.junit.jupiter:junit-jupiter-api")
+                this.add("testImplementation", "org.junit.jupiter:junit-jupiter-engine")
                 this.add("testImplementation", "org.mockito:mockito-core:${mockitoVersion}")
                 this.add("testImplementation", "org.mockito:mockito-junit-jupiter:${mockitoVersion}")
             }

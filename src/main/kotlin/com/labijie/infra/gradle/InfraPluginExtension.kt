@@ -12,6 +12,7 @@ import com.thinkimi.gradle.MybatisGeneratorExtension
 import org.gradle.api.Action
 import org.gradle.api.Project
 import org.gradle.api.model.ObjectFactory
+import org.jetbrains.kotlin.gradle.plugin.KaptExtension
 import java.io.File
 import javax.inject.Inject
 import kotlin.io.path.Path
@@ -42,7 +43,23 @@ open class InfraPluginExtension @Inject constructor(private val project: Project
         }
     }
 
-    fun useKsp(vararg kspDependencies: String) {
+    fun useKaptPlugin(vararg kaptDependencies: Any, kspConfig: Action<KaptExtension>? = null) {
+        if (!project.pluginManager.hasPlugin("org.jetbrains.kotlin.kapt")) {
+            project.apply(plugin = "org.jetbrains.kotlin.kapt")
+        }
+        project.dependencies.apply {
+            kaptDependencies.forEach {dp->
+                add("kapt", dp)
+            }
+        }
+        if(kspConfig != null) {
+            project.configureFor(KaptExtension::class.java) {
+                kspConfig.execute(this)
+            }
+        }
+    }
+
+    fun useKspPlugin(vararg kspDependencies: Any, kspConfig: Action<KspExtension>? = null) {
         if (!project.pluginManager.hasPlugin("com.google.devtools.ksp")) {
             project.apply(plugin = "com.google.devtools.ksp")
         }
@@ -51,11 +68,21 @@ open class InfraPluginExtension @Inject constructor(private val project: Project
                 add("ksp", dp)
             }
         }
-
+        if(kspConfig != null) {
+            project.configureFor(KspExtension::class.java) {
+                kspConfig.execute(this)
+            }
+        }
     }
 
-    fun useInfraOrmGenerator(version: String = "1.0.0", outputDir: String? = null, packageName: String? = null) {
-        useKsp("com.labijie.orm:exposed-generator:${version}")
+    fun useKspApi(version:String = DEFAULT_KSP_VERSION, configurationName:String = "implementation") {
+        project.dependencies.apply {
+            project.dependencies.add(configurationName, "com.google.devtools.ksp:symbol-processing-api:${version}")
+        }
+    }
+
+    fun useInfraOrmGenerator(version: String = "2.0.0", outputDir: String? = null, packageName: String? = null) {
+        useKspPlugin("com.labijie.orm:exposed-generator:${version}")
         if (!outputDir.isNullOrBlank() || !packageName.isNullOrBlank()) {
             project.configureFor(KspExtension::class.java) {
                 if (!outputDir.isNullOrBlank()) {

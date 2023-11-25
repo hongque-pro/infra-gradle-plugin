@@ -52,10 +52,23 @@ publishing {
 //}
 
 java {
-    sourceCompatibility = JavaVersion.VERSION_11
-    targetCompatibility = JavaVersion.VERSION_11
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
     withJavadocJar()
-    withJavadocJar()
+
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(17)
+    }
+}
+
+kotlin {
+    jvmToolchain {
+        languageVersion.set(JavaLanguageVersion.of(17))
+    }
+    // Or shorter:
+    jvmToolchain(17)
+    // For example:
+    jvmToolchain(17)
 }
 
 
@@ -76,8 +89,8 @@ repositories {
 }
 
 tasks.withType(JavaCompile::class.java) {
-    sourceCompatibility = "11"
-    targetCompatibility = "11"
+    sourceCompatibility = "17"
+    targetCompatibility = "17"
 }
 
 tasks.withType(Javadoc::class.java) {
@@ -92,9 +105,8 @@ if (tasks.findByName("test") != null) {
 
 
 dependencies {
-
-    implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8:${Constants.kotlinVersion}")
-    implementation("org.jetbrains.kotlin:kotlin-reflect:${Constants.kotlinVersion}")
+    api("org.jetbrains.kotlin:kotlin-stdlib-jdk8:${Constants.kotlinVersion}")
+    api("org.jetbrains.kotlin:kotlin-reflect:${Constants.kotlinVersion}")
     implementation(gradleApi())
     api("io.github.gradle-nexus:publish-plugin:${Constants.publishingPluginVersion}")
     api("org.jetbrains.kotlin:kotlin-allopen:${Constants.kotlinVersion}")
@@ -103,7 +115,7 @@ dependencies {
     //use for task gradle dependencyUpdates
     api("com.github.ben-manes:gradle-versions-plugin:${Constants.checkUpdatePlugin}")
 
-    compileOnly("com.google.devtools.ksp:symbol-processing-gradle-plugin:${Constants.kspPluginVersion}")
+    api("com.google.devtools.ksp:symbol-processing-gradle-plugin:${Constants.kspPluginVersion}")
 }
 
 registerPubTasks()
