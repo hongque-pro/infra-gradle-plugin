@@ -1,7 +1,7 @@
 # Infra-Gradle-Plugin
 
 ![gradle-plugin-portal](https://img.shields.io/gradle-plugin-portal/v/com.labijie.infra?logo=gradle)
-![workflow status](https://img.shields.io/github/actions/workflow/status/hongque-pro/infra-gradle-plugin/build.yml?branch=main)
+![workflow status](https://img.shields.io/github/actions/workflow/status/hongque-pro/infra-gradle-plugin/build.yml)
 ![license](https://img.shields.io/github/license/hongque-pro/infra-orm?style=flat-square)
 
 该插件旨在简化 Gradle 项目配置，几行代码就可以迅速开始一个项目。   
@@ -16,7 +16,7 @@ plugins {
 
 infra {
     useDefault {
-        infraBomVersion = "3.1.5" //如果不配置，表示不使用 Infra-Bom, 同时单元测试的依赖也不会被配置
+        infraBomVersion = "3.2.0" //不使用 infra-bom， 请设置为空串("")
         jvmVersion = "17"
     }
 
