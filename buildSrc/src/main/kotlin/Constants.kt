@@ -2,7 +2,6 @@ object Constants {
     const val projectVersion = "2.0.2"
 
     const val kotlinVersion = "1.9.21"
-    const val kotlinDSLVersion = "4.1.2" // need match kotlin 1.9.0
     const val publishingPluginVersion = "1.3.0"
     const val gradlePublishPluginVersion = "1.2.1"
     const val testPlugin = false

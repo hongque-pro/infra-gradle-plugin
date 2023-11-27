@@ -84,6 +84,20 @@ open class InfraPluginExtension @Inject constructor(private val project: Project
         }
     }
 
+    fun forceVersion(version:String, groupPrefix: String, vararg packageNamePrefix: String){
+        project.configurations.all {
+                conf->
+            conf.resolutionStrategy.eachDependency {
+                details->
+                if((details.requested.group == groupPrefix) &&
+                    (packageNamePrefix.isEmpty() || packageNamePrefix.any { details.requested.name.startsWith(it) }))
+                {
+                    details.useVersion(version)
+                }
+            }
+        }
+    }
+
     fun useDefault(action: Action<in ProjectProperties>) {
         val self = this
         val properties = ProjectProperties()
@@ -92,6 +106,7 @@ open class InfraPluginExtension @Inject constructor(private val project: Project
             self.isBom(),
             properties
         )
+        forceVersion(properties.kotlinVersion, "org.jetbrains.kotlin", "kotlin-stdlib", "kotlin-reflect")
     }
 
     fun useGithubAccount(user: String, key: String) {
