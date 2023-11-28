@@ -23,7 +23,30 @@ object Utils {
         return !System.getenv("GITHUB_JOB").isNullOrBlank()
     }
 
-    fun isDisableMavenPRoxy(): Boolean
+    fun isJenkinsPipeline(): Boolean
+    {
+        return !System.getenv("BUILD_NUMBER").isNullOrBlank() && !System.getenv("BUILD_ID").isNullOrBlank()
+    }
+
+    fun isTeamCity(): Boolean{
+        return !System.getenv("TEAMCITY_VERSION").isNullOrBlank()
+    }
+
+    /**
+     * Weather one of these environments:
+     *
+     * Github Action
+     *
+     * Jenkins
+     *
+     * TeamCity
+     */
+    fun isInCIPipeline(): Boolean
+    {
+        return isGithubAction() || !System.getenv("CI").isNullOrBlank() || isJenkinsPipeline()
+    }
+
+    fun isDisableMavenProxy(): Boolean
     {
         return !System.getenv("NO_MAVEN_PROXY").isNullOrBlank()
     }

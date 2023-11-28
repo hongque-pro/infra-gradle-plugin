@@ -17,7 +17,7 @@ class ProjectProperties {
     var jvmVersion: String = DEFAULT_JDK_VERSION
     var includeSource: Boolean = false
     var includeDocument: Boolean = false
-    var useMavenProxy: Boolean = !Utils.isGithubAction() && !Utils.isDisableMavenPRoxy()
+    var useMavenProxy: Boolean = !Utils.isGithubAction() && !Utils.isDisableMavenProxy()
     /**
      * GihHub repo
      *
