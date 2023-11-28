@@ -15,7 +15,6 @@ class ProjectProperties {
     var infraBomVersion: String = DEFAULT_INFRA_BOM_VERSION
     var kotlinVersion: String = DEFAULT_KOTLIN_VERSION
     var jvmVersion: String = DEFAULT_JDK_VERSION
-    var junitVersion: String = DEFAULT_JDK_VERSION
     var includeSource: Boolean = false
     var includeDocument: Boolean = false
     var useMavenProxy: Boolean = !Utils.isGithubAction() && !Utils.isDisableMavenPRoxy()
@@ -28,26 +27,12 @@ class ProjectProperties {
      */
     internal val githubRepositories = mutableMapOf<String, MutableSet<String>>()
 
-    fun addGitHubPackages(owner: String, vararg repositories: String) {
+    fun addGitHubRepository(owner: String, vararg repositories: String) {
         if (repositories.isNotEmpty() && owner.isNotBlank()) {
             val list = this.githubRepositories.getOrPut(owner) { mutableSetOf() }
             repositories.forEach {
                 list.add(it)
             }
         }
-    }
-
-    fun addHongQueGitHubPackages() {
-        addGitHubPackages("endink", "caching-kotlin")
-        addGitHubPackages(
-            "hongque-pro",
-            "infra-bom",
-            "infra-orm",
-            "infra-commons",
-            "infra-spring-cloud-stream",
-            "infra-telemetry",
-            "infra-mqts",
-            "infra-oauth2"
-        )
     }
 }

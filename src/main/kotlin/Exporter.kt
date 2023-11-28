@@ -37,7 +37,7 @@ fun Project.infra(isBom: Boolean = false, action: Action<in InfraPluginExtension
             }
         } else {
             this.apply(plugin = "org.jetbrains.kotlin.jvm")
-            this.apply(plugin = "kotlin-spring")
+            this.apply(plugin = "org.jetbrains.kotlin.plugin.spring")
             this.apply(plugin = "java-library")
         }
         this.apply(plugin = "com.github.ben-manes.versions")

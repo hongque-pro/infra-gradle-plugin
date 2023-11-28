@@ -92,15 +92,14 @@ infra {
 > `GITHUB_TOKEN`是消费仓库中的包必须的 PTA， 关于如何生成 PTA 参考这里:   
 > https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/creating-a-personal-access-token
 
-### 使用 GitHub Packages 中的包
+### 使用 GitHub Packages 仓库
 
 在 gradle.build.kts 中添加以下内容:
 ```groovy
 allprojects {
     infra {
         useDefault {
-            addHongQueGitHubPackages() //加入 hongque-pro 的基础包仓库
-            addGitHubPackages("<owner>", "<repository>") //特定的 Repository 仓库
+            addGitHubRepository("<owner>", "<repository>") //特定的 Github Repository 仓库
         }
     }
 }
