@@ -1,6 +1,29 @@
 group = "com.labijie.infra"
 version = Constants.projectVersion
 
+dependencies {
+    api("org.jetbrains.kotlin:kotlin-stdlib-jdk8:${Constants.kotlinVersion}")
+    api("org.jetbrains.kotlin:kotlin-reflect:${Constants.kotlinVersion}")
+    implementation(gradleApi())
+    api("io.github.gradle-nexus:publish-plugin:${Constants.publishingPluginVersion}")
+    api("org.jetbrains.kotlin:kotlin-allopen:${Constants.kotlinVersion}")
+    api("org.jetbrains.kotlin:kotlin-gradle-plugin:${Constants.kotlinVersion}")
+    api("${Constants.mybatisPluginLib}:${Constants.mybatisPluginVersion}")
+    api(Constants.checkUpdatePluginArtifact)
+    api("com.google.devtools.ksp:symbol-processing-gradle-plugin:${Constants.kspPluginVersion}")
+}
+
+//force version
+//configurations.all {
+//    resolutionStrategy {
+//        eachDependency {
+//            if(requested.group.startsWith("org.jetbrains.kotlin") && requested.name.startsWith("kotlin-")){
+//                useVersion(Constants.kotlinVersion)
+//            }
+//        }
+//    }
+//}
+
 plugins {
 
     kotlin("jvm") version Constants.kotlinVersion
@@ -9,9 +32,6 @@ plugins {
         id("com.labijie.infra") version Constants.projectVersion apply false
     }
     id("maven-publish")
-
-    //for debug comment this line to disable sign
-    //id("signing")
     id("java-gradle-plugin")
     id("java-library")
 }
@@ -103,20 +123,6 @@ if (tasks.findByName("test") != null) {
     }
 }
 
-
-dependencies {
-    api("org.jetbrains.kotlin:kotlin-stdlib-jdk8:${Constants.kotlinVersion}")
-    api("org.jetbrains.kotlin:kotlin-reflect:${Constants.kotlinVersion}")
-    implementation(gradleApi())
-    api("io.github.gradle-nexus:publish-plugin:${Constants.publishingPluginVersion}")
-    api("org.jetbrains.kotlin:kotlin-allopen:${Constants.kotlinVersion}")
-    api("org.jetbrains.kotlin:kotlin-gradle-plugin:${Constants.kotlinVersion}")
-    api("${Constants.mybatisPluginLib}:${Constants.mybatisPluginVersion}")
-    //use for task gradle dependencyUpdates
-    api("com.github.ben-manes:gradle-versions-plugin:${Constants.checkUpdatePlugin}")
-
-    api("com.google.devtools.ksp:symbol-processing-gradle-plugin:${Constants.kspPluginVersion}")
-}
 
 registerPubTasks()
 

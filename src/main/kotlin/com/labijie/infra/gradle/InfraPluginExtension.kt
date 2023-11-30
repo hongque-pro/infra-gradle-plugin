@@ -12,7 +12,6 @@ import com.thinkimi.gradle.MybatisGeneratorExtension
 import org.gradle.api.Action
 import org.gradle.api.Project
 import org.gradle.api.model.ObjectFactory
-import org.jetbrains.kotlin.gradle.plugin.KaptExtension
 import java.io.File
 import javax.inject.Inject
 import kotlin.io.path.Path
@@ -48,10 +47,8 @@ open class InfraPluginExtension @Inject constructor(private val project: Project
         if (!project.pluginManager.hasPlugin("com.google.devtools.ksp")) {
             project.apply(plugin = "com.google.devtools.ksp")
         }
-        project.dependencies.apply {
-            kspDependencies.forEach {dp->
-                add("ksp", dp)
-            }
+        kspDependencies.forEach {dp->
+            project.dependencies.add("ksp",dp)
         }
         if(kspConfig != null) {
             project.configureFor(KspExtension::class.java) {

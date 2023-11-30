@@ -1,5 +1,6 @@
 import com.github.benmanes.gradle.versions.updates.DependencyUpdatesTask
 import com.github.benmanes.gradle.versions.updates.resolutionstrategy.ComponentSelectionWithCurrent
+import com.labijie.infra.gradle.CheckUpdatePluginId
 import com.labijie.infra.gradle.InfraPluginExtension
 import com.labijie.infra.gradle.Utils
 import com.labijie.infra.gradle.Utils.apply
@@ -40,7 +41,7 @@ fun Project.infra(isBom: Boolean = false, action: Action<in InfraPluginExtension
             this.apply(plugin = "org.jetbrains.kotlin.plugin.spring")
             this.apply(plugin = "java-library")
         }
-        this.apply(plugin = "com.github.ben-manes.versions")
+        this.apply(plugin = CheckUpdatePluginId)
 
 
         this.tasks.withType(DependencyUpdatesTask::class.java) { dependencyUpdatesTask ->

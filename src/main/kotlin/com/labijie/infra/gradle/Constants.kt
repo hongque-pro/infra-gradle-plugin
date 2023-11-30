@@ -13,3 +13,6 @@ const val DEFAULT_KOTLIN_VERSION = "1.9.21"
 const val DEFAULT_JDK_VERSION="17"
 const val DEFAULT_INFRA_BOM_VERSION="3.2.0"
 const val DEFAULT_KSP_VERSION="1.9.20-1.0.14"
+
+
+const val CheckUpdatePluginId = "com.github.ben-manes.versions"
