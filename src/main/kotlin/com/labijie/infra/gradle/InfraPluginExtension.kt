@@ -107,7 +107,7 @@ open class InfraPluginExtension @Inject constructor(private val project: Project
         val properties = ProjectProperties()
         action.execute(properties)
         if(properties.gitPropertiesPluginEnabled) {
-            project.apply(GitPropertiesPluginId)
+            project.apply(plugin = GitPropertiesPluginId)
         }
         this.project.useDefault(
             self.isBom(),
