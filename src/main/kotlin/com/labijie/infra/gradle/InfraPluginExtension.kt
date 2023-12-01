@@ -113,7 +113,7 @@ open class InfraPluginExtension @Inject constructor(private val project: Project
             self.isBom(),
             properties
         )
-        this.project.useNexusPublishPlugin(!properties.mavenPublishingOldHost)
+        usePublishPlugin(!properties.mavenPublishingOldHost)
         forceVersion(properties.kotlinVersion, "org.jetbrains.kotlin", "kotlin-stdlib", "kotlin-reflect")
     }
 
