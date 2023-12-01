@@ -9,8 +9,9 @@ dependencies {
     api("org.jetbrains.kotlin:kotlin-allopen:${Constants.kotlinVersion}")
     api("org.jetbrains.kotlin:kotlin-gradle-plugin:${Constants.kotlinVersion}")
     api("${Constants.mybatisPluginLib}:${Constants.mybatisPluginVersion}")
-    api(Constants.checkUpdatePluginArtifact)
     api("com.google.devtools.ksp:symbol-processing-gradle-plugin:${Constants.kspPluginVersion}")
+    api(Constants.gitPropertiesPluginArtifact)
+    api(Constants.checkUpdatePluginArtifact)
 }
 
 //force version

@@ -18,6 +18,8 @@ class ProjectProperties {
     var includeSource: Boolean = false
     var includeDocument: Boolean = false
     var useMavenProxy: Boolean = !Utils.isGithubAction() && !Utils.isDisableMavenProxy()
+    var gitPropertiesPluginEnabled = true
+    var mavenPublishingOldHost = false
     /**
      * GihHub repo
      *

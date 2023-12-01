@@ -16,3 +16,4 @@ const val DEFAULT_KSP_VERSION="1.9.20-1.0.14"
 
 
 const val CheckUpdatePluginId = "com.github.ben-manes.versions"
+const val GitPropertiesPluginId = "com.gorylenko.gradle-git-properties"

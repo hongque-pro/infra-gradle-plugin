@@ -1,6 +1,7 @@
 package com.labijie.infra.gradle
 
 import com.google.devtools.ksp.gradle.KspExtension
+import com.gorylenko.GitPropertiesPluginExtension
 import com.labijie.infra.gradle.BuildConfig.useDefault
 import com.labijie.infra.gradle.BuildConfig.useGithubAccount
 import com.labijie.infra.gradle.BuildConfig.useNexusPublishPlugin
@@ -34,7 +35,7 @@ open class InfraPluginExtension @Inject constructor(private val project: Project
     /**
      *  @param newMavenHost Users registered in Sonatype after 24 February 2021 need to set this value to true
      */
-    fun usePublishPlugin(newMavenHost: Boolean = true) {
+    private fun usePublishPlugin(newMavenHost: Boolean = true) {
         if (project.parent == null) {
             this.project.useNexusPublishPlugin(newMavenHost)
         } else {
@@ -95,14 +96,24 @@ open class InfraPluginExtension @Inject constructor(private val project: Project
         }
     }
 
+    fun gitProperties(action: Action<GitPropertiesPluginExtension>) {
+        this.project.configureFor(GitPropertiesPluginExtension::class.java) {
+            action.execute(this)
+        }
+    }
+
     fun useDefault(action: Action<in ProjectProperties>) {
         val self = this
         val properties = ProjectProperties()
         action.execute(properties)
+        if(properties.gitPropertiesPluginEnabled) {
+            project.apply(GitPropertiesPluginId)
+        }
         this.project.useDefault(
             self.isBom(),
             properties
         )
+        this.project.useNexusPublishPlugin(!properties.mavenPublishingOldHost)
         forceVersion(properties.kotlinVersion, "org.jetbrains.kotlin", "kotlin-stdlib", "kotlin-reflect")
     }
 

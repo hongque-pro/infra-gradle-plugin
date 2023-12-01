@@ -29,9 +29,6 @@ infra {
             githubUrl("hongque-pro", "infra-test")
         }
     }
-
-    //加入 nexus publish 插件, 如果不需要发布包到 maven 或 nexus 无需配置
-    usePublishPlugin()
 }
 
 dependencies {
@@ -108,7 +105,8 @@ allprojects {
 
 
 ## 发布 Maven 包
-在 gradle.build.kts 中添加以下内容:   
+默认插件已经自动配置了将包发布到 **maven** 中央仓库，你可以将包发布到 **github pages** 或私有 **nexus** 仓库
+在 `gradle.build.kts` 中添加以下内容:   
 
 ```groovy
 subprojects {
@@ -162,7 +160,7 @@ signing.secretKeyRingFile=
 https://docs.gradle.org/current/userguide/signing_plugin.html
 
 
-## Maven 仓库镜像
+## Maven 使用仓库镜像
 
 默认情况下，插件会自动使用  maven 仓库加速：
 - 使用阿里云镜像加速: https://maven.aliyun.com/nexus/content/groups/public/
@@ -180,6 +178,22 @@ https://docs.gradle.org/current/userguide/signing_plugin.html
 infra {
     useDefault {
         useMavenProxy = false
+    }
+}
+```
+
+## 配置 GitProperties 插件
+
+默认集成了 git properties 插件
+> 插件地址:    
+> https://github.com/n0mer/gradle-git-properties
+
+可以通过如下方式配置插件
+
+```kotlin
+infra {
+    gitProperties {
+        failOnNoGitDirectory = false
     }
 }
 ```
