@@ -43,6 +43,15 @@ open class InfraPluginExtension @Inject constructor(private val project: Project
         }
     }
 
+    fun useKaptPlugin(vararg kaptDependencies: Any, kspConfig: Action<KspExtension>? = null) {
+        if (!project.pluginManager.hasPlugin("org.jetbrains.kotlin.kapt")) {
+            project.apply(plugin = "org.jetbrains.kotlin.kapt")
+        }
+        kaptDependencies.forEach {dp->
+            project.dependencies.add("kapt",dp)
+        }
+    }
+
 
     fun useKspPlugin(vararg kspDependencies: Any, kspConfig: Action<KspExtension>? = null) {
         if (!project.pluginManager.hasPlugin("com.google.devtools.ksp")) {
