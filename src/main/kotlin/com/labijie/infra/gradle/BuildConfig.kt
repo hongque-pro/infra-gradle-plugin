@@ -124,6 +124,7 @@ internal object BuildConfig {
         this.tasks.withType(JavaCompile::class.java) {
             it.sourceCompatibility = projectProperties.jvmVersion
             it.targetCompatibility = projectProperties.jvmVersion
+            it.options.encoding = "UTF-8"
         }
 
         this.configureFor(JavaPluginExtension::class.java) {
@@ -150,8 +151,8 @@ internal object BuildConfig {
 
         this.tasks.withType(Javadoc::class.java) {
             it.isFailOnError = false
+            it.options.encoding = "UTF-8"
         }
-
 
 
         if (this.tasks.findByName("test") != null) {
