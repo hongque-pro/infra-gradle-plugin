@@ -13,6 +13,7 @@ import com.thinkimi.gradle.MybatisGeneratorExtension
 import org.gradle.api.Action
 import org.gradle.api.Project
 import org.gradle.api.model.ObjectFactory
+import org.jetbrains.kotlin.gradle.plugin.KaptExtension
 import java.io.File
 import javax.inject.Inject
 import kotlin.io.path.Path
@@ -43,12 +44,17 @@ open class InfraPluginExtension @Inject constructor(private val project: Project
         }
     }
 
-    fun useKaptPlugin(vararg kaptDependencies: Any, kspConfig: Action<KspExtension>? = null) {
+    fun useKaptPlugin(vararg kaptDependencies: Any, kaptConfig: Action<KaptExtension>? = null) {
         if (!project.pluginManager.hasPlugin("org.jetbrains.kotlin.kapt")) {
             project.apply(plugin = "org.jetbrains.kotlin.kapt")
         }
         kaptDependencies.forEach {dp->
             project.dependencies.add("kapt",dp)
+        }
+        if(kaptConfig != null) {
+            project.configureFor(KaptExtension::class.java) {
+                kaptConfig.execute(this)
+            }
         }
     }
 
