@@ -52,6 +52,10 @@ open class InfraPluginExtension @Inject constructor(private val project: Project
         }
     }
 
+    fun useSpringConfigurationProcessor(springbootVersion: String) {
+        useKaptPlugin("org.springframework.boot:spring-boot-configuration-processor:${springbootVersion}")
+    }
+
 
     fun useKspPlugin(vararg kspDependencies: Any, kspConfig: Action<KspExtension>? = null) {
         if (!project.pluginManager.hasPlugin("com.google.devtools.ksp")) {
