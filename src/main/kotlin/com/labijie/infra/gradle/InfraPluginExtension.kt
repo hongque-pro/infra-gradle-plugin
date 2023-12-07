@@ -14,6 +14,7 @@ import org.gradle.api.Action
 import org.gradle.api.Project
 import org.gradle.api.model.ObjectFactory
 import org.jetbrains.kotlin.gradle.plugin.KaptExtension
+import processResources
 import java.io.File
 import javax.inject.Inject
 import kotlin.io.path.Path
@@ -134,6 +135,15 @@ open class InfraPluginExtension @Inject constructor(private val project: Project
         )
         usePublishPlugin(!properties.mavenPublishingOldHost)
         forceVersion(properties.kotlinVersion, "org.jetbrains.kotlin", "kotlin-stdlib", "kotlin-reflect")
+
+        project.processResources {
+            from("src/main/kotlin") {
+                include("**/*.properties")
+            }
+            from("src/main/java") {
+                include("**/*.properties")
+            }
+        }
     }
 
     fun useGithubAccount(user: String, key: String) {
