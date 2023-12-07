@@ -135,13 +135,25 @@ open class InfraPluginExtension @Inject constructor(private val project: Project
         )
         usePublishPlugin(!properties.mavenPublishingOldHost)
         forceVersion(properties.kotlinVersion, "org.jetbrains.kotlin", "kotlin-stdlib", "kotlin-reflect")
+    }
 
+    /**
+     * @param targetClassPath target bundle path (package path), example: com/labijie/application
+     * @param resourceName resource file name, default is "messages"
+     */
+    fun processSpringMessageSource(targetClassPath:String, resourceName: String = "messages", showLog: Boolean) {
         project.processResources {
-            from("src/main/kotlin") {
-                include("**/*.properties")
+            from("src/main/resources") {
+                include("${resourceName}*.properties")
+                into(targetClassPath)
             }
-            from("src/main/java") {
-                include("**/*.properties")
+            filesMatching("${resourceName}*.properties") {
+                if(showLog) {
+                    println("find message resource: ${this.path}")
+                }
+                if(!this.path.startsWith(targetClassPath)) {
+                    this.exclude()
+                }
             }
         }
     }
