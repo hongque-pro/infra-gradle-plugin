@@ -141,7 +141,7 @@ open class InfraPluginExtension @Inject constructor(private val project: Project
      * @param targetClassPath target bundle path (package path), example: com/labijie/application
      * @param resourceName resource file name, default is "messages"
      */
-    fun processSpringMessageSource(targetClassPath:String, resourceName: String = "messages", showLog: Boolean) {
+    fun processSpringMessageSource(targetClassPath:String, resourceName: String = "messages", showLog: Boolean = false) {
         project.processResources {
             from("src/main/resources") {
                 include("${resourceName}*.properties")
