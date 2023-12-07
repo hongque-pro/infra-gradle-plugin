@@ -144,15 +144,18 @@ open class InfraPluginExtension @Inject constructor(private val project: Project
     fun processSpringMessageSource(targetClassPath:String, resourceName: String = "messages", showLog: Boolean = false) {
         project.processResources {
             from("src/main/resources") {
-                include("${resourceName}*.properties")
-                into(targetClassPath)
+                cp->
+                cp.include("${resourceName}*.properties")
+                cp.into(targetClassPath)
             }
             filesMatching("${resourceName}*.properties") {
+                cp->
+                val include = cp.path.startsWith(targetClassPath)
                 if(showLog) {
-                    println("find message resource: ${this.path}")
+                    println("find message resource: ${cp.path} (${if(include) "included" else "excluded"}")
                 }
-                if(!this.path.startsWith(targetClassPath)) {
-                    this.exclude()
+                if(!include) {
+                    cp.exclude()
                 }
             }
         }
