@@ -5,8 +5,6 @@ import com.gorylenko.GitPropertiesPluginExtension
 import com.labijie.infra.gradle.BuildConfig.useDefault
 import com.labijie.infra.gradle.BuildConfig.useGithubAccount
 import com.labijie.infra.gradle.BuildConfig.useNexusPublishPlugin
-import com.labijie.infra.gradle.InfraPlugin.Companion.execute
-import com.labijie.infra.gradle.InfraPlugin.Companion.executeTask
 import com.labijie.infra.gradle.Utils.apply
 import com.labijie.infra.gradle.Utils.configureFor
 import com.labijie.infra.gradle.Utils.getProjectFile
