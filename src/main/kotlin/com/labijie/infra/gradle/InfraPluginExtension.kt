@@ -5,6 +5,8 @@ import com.gorylenko.GitPropertiesPluginExtension
 import com.labijie.infra.gradle.BuildConfig.useDefault
 import com.labijie.infra.gradle.BuildConfig.useGithubAccount
 import com.labijie.infra.gradle.BuildConfig.useNexusPublishPlugin
+import com.labijie.infra.gradle.InfraPlugin.Companion.execute
+import com.labijie.infra.gradle.InfraPlugin.Companion.executeTask
 import com.labijie.infra.gradle.Utils.apply
 import com.labijie.infra.gradle.Utils.configureFor
 import com.labijie.infra.gradle.Utils.getProjectFile
@@ -133,6 +135,22 @@ open class InfraPluginExtension @Inject constructor(private val project: Project
             self.isBom(),
             properties
         )
+
+//        if(project.tasks.findByName("cleanAndBuild") == null) {
+//            project.tasks.register("cleanAndBuild") {
+//                it.dependsOn("clean")
+//                it.group = "build"
+//                it.doLast {
+//                    task->
+//                    task.project.exec {
+//                        exec->
+//                        exec.executable = "gradle"
+//                        exec.args = listOf(":${project.name}:clean", ":${project.name}:build")
+//                    }
+//                }
+//            }
+//        }
+
         usePublishPlugin(!properties.mavenPublishingOldHost)
         forceVersion(properties.kotlinVersion, "org.jetbrains.kotlin", "kotlin-stdlib", "kotlin-reflect")
     }

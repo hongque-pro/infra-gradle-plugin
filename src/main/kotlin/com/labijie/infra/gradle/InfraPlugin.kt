@@ -13,16 +13,28 @@ import org.gradle.api.Task
 class InfraPlugin : Plugin<Project> {
     companion object {
         fun Task.execute() {
+            val t = this
             this.actions.forEach {
-                it.execute(this)
+                it.execute(t)
             }
         }
 
-        fun executeTask(task: Task) {
+        private fun Project.executeTask(task: Task, lock: Boolean) {
+            if(lock) {
+                this.project.dependencyLocking.lockAllConfigurations()
+            }
             task.taskDependencies.getDependencies(task).forEach {
-                    subTask -> executeTask(subTask)
+                    subTask->
+                executeTask(subTask, lock)
             }
             task.execute()
+            if(lock) {
+                this.project.dependencyLocking.unlockAllConfigurations()
+            }
+        }
+
+        fun Project.executeTask(task: Task) {
+            executeTask(task, false)
         }
     }
 
