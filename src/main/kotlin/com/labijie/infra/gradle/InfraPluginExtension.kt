@@ -84,7 +84,7 @@ open class InfraPluginExtension @Inject constructor(private val project: Project
         }
     }
 
-    fun useInfraOrmGenerator(version: String = "2.0.0", outputDir: String? = null, packageName: String? = null) {
+    fun useInfraOrmGenerator(version: String = "2.0.+", outputDir: String? = null, packageName: String? = null) {
         useKspPlugin("com.labijie.orm:exposed-generator:${version}")
         if (!outputDir.isNullOrBlank() || !packageName.isNullOrBlank()) {
             project.configureFor(KspExtension::class.java) {
