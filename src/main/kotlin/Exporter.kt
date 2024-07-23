@@ -1,6 +1,7 @@
 import com.github.benmanes.gradle.versions.updates.DependencyUpdatesTask
 import com.github.benmanes.gradle.versions.updates.resolutionstrategy.ComponentSelectionWithCurrent
 import com.labijie.infra.gradle.CheckUpdatePluginId
+import com.labijie.infra.gradle.DEFAULT_KOTLIN_VERSION
 import com.labijie.infra.gradle.InfraPluginExtension
 import com.labijie.infra.gradle.Utils
 import com.labijie.infra.gradle.Utils.apply
@@ -84,3 +85,34 @@ inline fun <reified C : Task> Project.configureTask(name: String, configuration:
 fun Project.processResources(configure: ProcessResources.() -> Unit) {
     this.configureTask(name = "processResources", configuration = configure)
 }
+
+fun Project.forceDependencyGroupVersion(group: String, version: String) {
+    if(group.isNotBlank() && version.isNotBlank()) {
+        configurations.all {
+            it.resolutionStrategy.eachDependency { details ->
+                val requested = details.requested
+                if (requested.group == group) {
+                    details.useVersion(DEFAULT_KOTLIN_VERSION)
+                }
+            }
+        }
+    }else {
+        project.logger.warn("forceDependencyGroupVersion require group and version parameter !")
+    }
+}
+
+fun Project.forceDependencyVersion(group: String, name: String, version: String) {
+    if(group.isNotBlank() && version.isNotBlank() && name.isNotBlank()) {
+        configurations.all {
+            it.resolutionStrategy.eachDependency { details ->
+                val requested = details.requested
+                if (requested.group == group) {
+                    details.useVersion(DEFAULT_KOTLIN_VERSION)
+                }
+            }
+        }
+    }else {
+        project.logger.warn("forceDependencyVersion require group, name, version parameters !")
+    }
+}
+
