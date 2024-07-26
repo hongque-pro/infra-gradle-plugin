@@ -9,7 +9,7 @@
 
 ## 快速开始
 
-```groovy
+```kotlin
 plugins {
     id("com.labijie.infra") version "your version"
 }
@@ -37,12 +37,13 @@ dependencies {
 
 ```
 
-## 自动创建的快速构建任务 
+## 快速构建任务 
 
 (Since 2.0.4)   
 
-随着项目的规模扩大， gradle 完整构建速度缓慢，因为其中一些任务，例如 `test`, `ksp`, `kapt` 等可能不是每次都需要执行, 
-你可以使用命令行 -x <task name> 跳过这些任务，但是每次输入较长的命令非常不方便，本插件自动创建一个 `fastBuild` 任务，用来自动排除不常用的任务。
+随着项目的规模扩大， gradle 完整构建速度缓慢，其中一些任务（例如 `test`, `ksp`, `kapt` 等）可能不是每次都需要执行, 
+你可以使用命令行 -x <task name> 跳过这些任务，但是每次输入较长的命令非常不方便，本插件自动创建一个 `fastBuild` 任务，
+用来实现仅 "Compile"， 该任务会将 test, symbol process 等相关任务完全排除，得到一个瘦身后的 build 任务。
 
 ```shell
 gralde fastBuild
