@@ -35,8 +35,27 @@ dependencies {
     //...和原生 DSL 用法一致
 }
 
+```
 
+## 自动创建的快速构建任务 
 
+(Since 2.0.4)   
+
+随着项目的规模扩大， gradle 完整构建速度缓慢，因为其中一些任务，例如 `test`, `ksp`, `kapt` 等可能不是每次都需要执行, 
+你可以使用命令行 -x <task name> 跳过这些任务，但是每次输入较长的命令非常不方便，本插件自动创建一个 `fastBuild` 任务，用来自动排除不常用的任务。
+
+```shell
+gralde fastBuild
+```
+
+事实证明，这可以介绍 70% 的时间，同时避免 ksp/kapt 等任务造成的内存溢出，在很多场景下非常适用。
+
+你还可以配置额外要跳过的任务，例如：
+
+```kotlin
+infra {
+    skipTaskForFastBuild("myBatisGenerate", "gitPropertiesGenerate")
+}
 ```
 
 ## local.properties 支持
@@ -83,13 +102,32 @@ infra {
 }
 ```
 
+### 发布到 Github Packages 
+
+`gradle.build` 文件中加入:
+
+```kotlin
+ infra {
+    publishing {
+        toGithubPackages(<git-repo-owner>, <repo-name>)
+    }
+}
+```
+
+> 其中 `toGithubPackages` 参数：    
+> `git-repo-owner` : github 用户/组织名称   
+> `git-repo-owner` : github 仓库名称 
+>
+> 例如 [application-framework](https://github.com/hongque-pro/application-framework) 可以写作：   
+> toGithubPackages("hongque-pro", "application-framework")
+
 
 > **关于 Github Token**   
 > 
 > `GITHUB_TOKEN`是消费仓库中的包必须的 PTA， 关于如何生成 PTA 参考这里:   
 > https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/creating-a-personal-access-token
 
-### 使用 GitHub Packages 仓库
+### 消费 GitHub Packages 中的包
 
 在 gradle.build.kts 中添加以下内容:
 ```groovy
@@ -118,7 +156,6 @@ subprojects {
                 artifactId { "mylib" }
             }
 
-            toGithubPackages("hongque-pro", "infra-bom")
             toNexus("http://xxxx", "userA", "password")
         }
     }
@@ -187,6 +224,10 @@ infra {
 默认集成了 git properties 插件
 > 插件地址:    
 > https://github.com/n0mer/gradle-git-properties
+> 
+> 需要注意的是，为了避免重名 git.properties 资源，插件默认使用 git-info/git.properties 打包文件。
+> 
+> 配合 [application-framework](https://github.com/hongque-pro/application-framework) 项目 `getGitProperties` 可以方便的读取 git 信息
 
 可以通过如下方式配置插件
 

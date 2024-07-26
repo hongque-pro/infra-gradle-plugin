@@ -18,38 +18,28 @@ object Utils {
     val initedProjects = ConcurrentHashMap<Project, Properties>()
     val configuredProjects = ConcurrentHashMap<Project, Boolean>()
 
-    fun isGithubAction(): Boolean
-    {
-        return !System.getenv("GITHUB_JOB").isNullOrBlank()
+    const val TASK_NAME_INFRA_FINALIZE = "infraGradlePluginFinalize"
+    const val TASK_NAME_FAST_BUILD = "fastBuild"
+
+    private val fastModeList = ConcurrentHashMap<String, Boolean>()
+    internal fun isInFastMode(project: Project): Boolean {
+        return fastModeList.containsKey(project.path)
     }
 
-    fun isJenkinsPipeline(): Boolean
-    {
-        return !System.getenv("BUILD_NUMBER").isNullOrBlank() && !System.getenv("BUILD_ID").isNullOrBlank()
+    internal fun Project.printFastModelDebug() {
+        println("[${this.path}] Fast model: ${isInFastMode(this)}")
+        println("fast list:")
+        println(fastModeList.keys.joinToString(System.lineSeparator()))
     }
 
-    fun isTeamCity(): Boolean{
-        return !System.getenv("TEAMCITY_VERSION").isNullOrBlank()
+    internal fun setFastMode(project: Project, enabled: Boolean) {
+        if(enabled) {
+            fastModeList[project.path] = true
+        }else {
+            fastModeList.remove(project.path)
+        }
     }
 
-    /**
-     * Weather one of these environments:
-     *
-     * Github Action
-     *
-     * Jenkins
-     *
-     * TeamCity
-     */
-    fun isInCIPipeline(): Boolean
-    {
-        return isGithubAction() || !System.getenv("CI").isNullOrBlank() || isJenkinsPipeline()
-    }
-
-    fun isDisableMavenProxy(): Boolean
-    {
-        return !System.getenv("NO_MAVEN_PROXY").isNullOrBlank()
-    }
 
     fun Project.setIsInfraBom(isBom: Boolean) {
         project.extraProperties["infraIsBom"] = isBom
@@ -64,11 +54,9 @@ object Utils {
     }
 
     inline fun <reified T : Any> Project.configureFor(clazz: Class<T>, noinline configuration: T.() -> Unit): Unit =
-        @Suppress("deprecation")
         clazz.let { type ->
-            convention.findByType(type)?.let(configuration)
-                ?: convention.findPlugin(clazz)?.let(configuration)
-                ?: convention.configure(type, configuration)
+            extensions.findByType(type)?.let(configuration)
+                ?: extensions.configure(type, configuration)
         }
 
     fun PluginAware.apply(from: Any? = null, plugin: String? = null, to: Any? = null) {
@@ -80,20 +68,8 @@ object Utils {
         }
     }
 
-    fun <T : Any> Project.the(extensionType: KClass<T>): T =
-        @Suppress("deprecation") convention.findByType(extensionType.java)
-            ?: @Suppress("deprecation") convention.findPlugin(extensionType.java)
-            ?: @Suppress("deprecation") convention.getByType(extensionType.java)
+    fun <T : Any> Project.the(extensionType: KClass<T>): T = extensions.getByType(extensionType.java)
 
-
-    fun Project.getProjectFile(file: String): String {
-        val f = File(file)
-        return if(f.isAbsolute){
-            f.absolutePath
-        }else{
-            File(this.projectDir, file).absolutePath
-        }
-    }
 
     fun compareVersion(version1: String, version2: String): Int {
         val versionArray1 = version1.split("\\.").toTypedArray() //注意此处为正则匹配，不能用"."；

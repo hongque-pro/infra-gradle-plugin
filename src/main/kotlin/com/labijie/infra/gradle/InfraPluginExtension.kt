@@ -7,14 +7,15 @@ import com.labijie.infra.gradle.BuildConfig.useGithubAccount
 import com.labijie.infra.gradle.BuildConfig.useNexusPublishPlugin
 import com.labijie.infra.gradle.Utils.apply
 import com.labijie.infra.gradle.Utils.configureFor
-import com.labijie.infra.gradle.Utils.getProjectFile
 import com.labijie.infra.gradle.internal.ProjectProperties
 import com.thinkimi.gradle.MybatisGeneratorExtension
+import configureTask
+import getProjectFile
 import org.gradle.api.Action
 import org.gradle.api.Project
 import org.gradle.api.model.ObjectFactory
+import org.gradle.language.jvm.tasks.ProcessResources
 import org.jetbrains.kotlin.gradle.plugin.KaptExtension
-import processResources
 import java.io.File
 import javax.inject.Inject
 import kotlin.io.path.Path
@@ -28,6 +29,30 @@ import kotlin.io.path.Path
 open class InfraPluginExtension @Inject constructor(private val project: Project, private val objectFactory: ObjectFactory) {
     companion object {
         const val Name = "infra"
+    }
+
+    internal val skipTasks = mutableSetOf(
+        "test",
+        "kspKotlin",
+        "kaptKotlin",
+        "kspTestKotlin",
+        "javadoc",
+        "javadocJar",
+        "compileTestJava",
+        "compileTestKotlin",
+        "processTestResources",
+        "testClasses"
+    )
+
+
+    private fun Project.processResources(configure: ProcessResources.() -> Unit) {
+        this.configureTask(name = "processResources", configuration = configure)
+    }
+
+    fun skipTaskForFastBuild(vararg tasks: String) {
+        tasks.forEach {
+            this.skipTasks.add(it)
+        }
     }
 
     private fun isBom(): Boolean {
@@ -128,6 +153,13 @@ open class InfraPluginExtension @Inject constructor(private val project: Project
         action.execute(properties)
         if(properties.gitPropertiesPluginEnabled) {
             project.apply(plugin = GitPropertiesPluginId)
+            project.configureFor(GitPropertiesPluginExtension::class.java) {
+                this.customProperties.putIfAbsent("project.version", project.version)
+                this.customProperties.putIfAbsent("project.group", project.group)
+                this.customProperties.putIfAbsent("project.name", project.name)
+                this.gitPropertiesName =  "git-info/git.properties"
+                this.failOnNoGitDirectory = false
+            }
         }
         this.project.useDefault(
             self.isBom(),
@@ -187,7 +219,12 @@ open class InfraPluginExtension @Inject constructor(private val project: Project
     }
 
     /**
-     * 使用 mybatis 代码生成器， 可以配合 itfsw 插件
+     * 使用 mybatis 代码生成器
+     *
+     * 插件： com.thinkimi.gradle.MybatisGenerator
+     *
+     * 可以配合 itfsw 插件
+     *
      * @see <a href="https://github.com/itfsw/mybatis-generator-plugin">https://github.com/itfsw/mybatis-generator-plugin</a>
      *
      * @param configFile XML 配置文件路径，相对路径表示相对项目根目录的路径，也可以设置据对路径
@@ -202,6 +239,7 @@ open class InfraPluginExtension @Inject constructor(private val project: Project
      * @param propertiesFileConfigKey XML 中 properties 文件使用的 key
      *
      */
+    @Deprecated("Use infra-orm instead Mybatis: https://github.com/hongque-pro/infra-orm")
     fun useMybatis(
         configFile: String,
         propertiesFile: String,

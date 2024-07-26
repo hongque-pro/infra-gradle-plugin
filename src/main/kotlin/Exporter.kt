@@ -10,7 +10,7 @@ import org.gradle.api.Action
 import org.gradle.api.Project
 import org.gradle.api.Task
 import org.gradle.api.plugins.JavaPlatformExtension
-import org.gradle.language.jvm.tasks.ProcessResources
+import java.io.File
 import java.util.*
 
 /**
@@ -22,7 +22,7 @@ import java.util.*
 fun Project.infra(isBom: Boolean = false, action: Action<in InfraPluginExtension>) {
     if (!Utils.initedProjects.contains(this)) {
 
-        val props =  Utils.initedProjects.getOrPut(this) { Properties() }
+        val props = Utils.initedProjects.getOrPut(this) { Properties() }
 
         val file = project.rootProject.file("local.properties")
         if (file.isFile && file.exists()) {
@@ -54,7 +54,7 @@ fun Project.infra(isBom: Boolean = false, action: Action<in InfraPluginExtension
                         val rejected = listOf("alpha", "beta", "rc", "cr", "m", "preview", "b", "ea")
                             .map { qualifier -> Regex("(?i).*[.-]$qualifier[.\\d-+]*") }
 
-                            .any { it.matches( c.candidate.version) }
+                            .any { it.matches(c.candidate.version) }
                         if (rejected) {
                             c.reject("Release candidate")
                         }
@@ -69,25 +69,34 @@ fun Project.infra(isBom: Boolean = false, action: Action<in InfraPluginExtension
     }
 }
 
+fun Project.getProjectFile(file: String): String {
+    val f = File(file)
+    return if (f.isAbsolute) {
+        f.absolutePath
+    } else {
+        File(this.projectDir, file).absolutePath
+    }
+}
+
 fun Project.findPropertyAndLocal(propertyName: String): String? {
-    return Utils.initedProjects.getOrDefault(project, null)?.get(propertyName)?.toString() ?: project.findProperty(propertyName)?.toString()
+    return Utils.initedProjects.getOrDefault(project, null)?.get(propertyName)?.toString() ?: project.findProperty(
+        propertyName
+    )?.toString()
 }
 
 fun Project.getPropertyOrCmdArgs(envVarName: String, cmdArgName: String? = null): String? {
     val project = this
-    return (System.getProperty(cmdArgName ?: envVarName) ?: System.getenv(envVarName)?.ifEmpty { null }) ?: project.findPropertyAndLocal(cmdArgName ?: envVarName)
+    return (System.getProperty(cmdArgName ?: envVarName) ?: System.getenv(envVarName)?.ifEmpty { null })
+        ?: project.findPropertyAndLocal(cmdArgName ?: envVarName)
 }
 
 inline fun <reified C : Task> Project.configureTask(name: String, configuration: C.() -> Unit) {
     (this.tasks.getByName(name) as C).configuration()
 }
 
-fun Project.processResources(configure: ProcessResources.() -> Unit) {
-    this.configureTask(name = "processResources", configuration = configure)
-}
 
 fun Project.forceDependencyGroupVersion(group: String, version: String) {
-    if(group.isNotBlank() && version.isNotBlank()) {
+    if (group.isNotBlank() && version.isNotBlank()) {
         configurations.all {
             it.resolutionStrategy.eachDependency { details ->
                 val requested = details.requested
@@ -96,23 +105,57 @@ fun Project.forceDependencyGroupVersion(group: String, version: String) {
                 }
             }
         }
-    }else {
+    } else {
         project.logger.warn("forceDependencyGroupVersion require group and version parameter !")
     }
 }
 
 fun Project.forceDependencyVersion(group: String, name: String, version: String) {
-    if(group.isNotBlank() && version.isNotBlank() && name.isNotBlank()) {
+    if (group.isNotBlank() && version.isNotBlank()) {
         configurations.all {
             it.resolutionStrategy.eachDependency { details ->
                 val requested = details.requested
-                if (requested.group == group) {
-                    details.useVersion(DEFAULT_KOTLIN_VERSION)
+                if (requested.group == group && (name.isBlank() || requested.name == name)) {
+                    details.useVersion(version)
                 }
             }
         }
-    }else {
+    } else {
         project.logger.warn("forceDependencyVersion require group, name, version parameters !")
     }
 }
 
+fun Project.forceDependencyVersion(group: String, version: String) {
+    forceDependencyVersion(group, "", version)
+}
+
+fun isGithubAction(): Boolean {
+    return !System.getenv("GITHUB_JOB").isNullOrBlank()
+}
+
+fun isJenkinsPipeline(): Boolean {
+    return !System.getenv("BUILD_NUMBER").isNullOrBlank() && !System.getenv("BUILD_ID").isNullOrBlank()
+}
+
+fun isTeamCityPipeline(): Boolean {
+    return !System.getenv("TEAMCITY_VERSION").isNullOrBlank()
+}
+
+/**
+ * Check whether project is building in ci pipeline.
+ *
+ * Currently, we check below ci software:
+ *
+ * GitHub, Jenkins, TemCity
+ *
+ *  @see isTeamCityPipeline
+ *  @see isJenkinsPipeline
+ *  @see isGithubAction
+ */
+fun isInCIPipeline(): Boolean {
+    return isGithubAction() || !System.getenv("CI").isNullOrBlank() || isJenkinsPipeline() || isTeamCityPipeline()
+}
+
+fun isDisableMavenProxy(): Boolean {
+    return !System.getenv("NO_MAVEN_PROXY").isNullOrBlank()
+}

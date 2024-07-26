@@ -1,5 +1,5 @@
 object Constants {
-    const val projectVersion = "2.0.3"
+    const val projectVersion = "2.0.4"
 
     const val kotlinVersion = "1.9.21"
     const val publishingPluginVersion = "1.3.0"

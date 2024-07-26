@@ -14,16 +14,6 @@ dependencies {
     api(Constants.checkUpdatePluginArtifact)
 }
 
-//force version
-//configurations.all {
-//    resolutionStrategy {
-//        eachDependency {
-//            if(requested.group.startsWith("org.jetbrains.kotlin") && requested.name.startsWith("kotlin-")){
-//                useVersion(Constants.kotlinVersion)
-//            }
-//        }
-//    }
-//}
 
 plugins {
 
