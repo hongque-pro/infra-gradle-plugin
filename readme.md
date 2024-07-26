@@ -8,7 +8,7 @@
 <mark>注意</mark>: 仅支持 Kotlin DSL 的 gradle 项目。
 
 ## 快速开始
-
+通过简单几行 DSL 代码，快速生成一个可编译、可发布到 maven 的 project: 
 ```kotlin
 plugins {
     id("com.labijie.infra") version "your version"
@@ -49,7 +49,7 @@ dependencies {
 gralde fastBuild
 ```
 
-事实证明，这可以介绍 70% 的时间，同时避免 ksp/kapt 等任务造成的内存溢出，在很多场景下非常适用。
+实测下来，这可以节省 60% 的构建时间（测试项目包含 ksp/kapt），同时避免 ksp/kapt 等任务造成的内存溢出，在很多场景下非常适用。
 
 你还可以配置额外要跳过的任务，例如：
 
