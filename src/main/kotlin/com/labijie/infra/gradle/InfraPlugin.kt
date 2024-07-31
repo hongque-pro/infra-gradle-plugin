@@ -44,7 +44,14 @@ class InfraPlugin : Plugin<Project> {
 
     private fun Project.configureFastMode() {
         val pr = this
-        if(pr.tasks.findByName("build") != null) {
+        if(pr.tasks.findByName("build") != null && pr.tasks.findByName(Utils.TASK_NAME_FAST_BUILD) == null) {
+            pr.tasks.register(Utils.TASK_NAME_FAST_BUILD, BuildOnlyTask::class.java) {
+                it.group = "build"
+                it.finalizedBy("build")
+            }
+
+            pr.tasks.register(Utils.TASK_NAME_INFRA_FINALIZE, ExitFastBuild::class.java)
+
             val skipTasks = pr.extensions.findByType(InfraPluginExtension::class.java)?.skipTasks
             skipTasks?.let {
                 skipTasks.forEach {
@@ -65,13 +72,6 @@ class InfraPlugin : Plugin<Project> {
     override fun apply(target: Project) {
         target.extensions.create(InfraPluginExtension.Name, InfraPluginExtension::class.java, target)
 
-        target.tasks.register(Utils.TASK_NAME_FAST_BUILD, BuildOnlyTask::class.java) {
-            it.group = "build"
-            it.finalizedBy("build")
-        }
-
-        target.tasks.register(Utils.TASK_NAME_INFRA_FINALIZE, ExitFastBuild::class.java) {
-        }
 
 
 
