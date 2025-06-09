@@ -101,7 +101,7 @@ fun Project.forceDependencyGroupVersion(group: String, version: String) {
             it.resolutionStrategy.eachDependency { details ->
                 val requested = details.requested
                 if (requested.group == group) {
-                    details.useVersion(DEFAULT_KOTLIN_VERSION)
+                    details.useVersion(version)
                 }
             }
         }

@@ -2,8 +2,8 @@ package com.labijie.infra.gradle
 
 import org.gradle.api.Project
 import org.gradle.api.plugins.PluginAware
+import org.gradle.internal.extensions.core.extra
 import org.jetbrains.kotlin.gradle.plugin.extraProperties
-import java.io.File
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 import kotlin.reflect.KClass
@@ -15,30 +15,15 @@ import kotlin.reflect.KClass
  * @Description:
  */
 object Utils {
-    val initedProjects = ConcurrentHashMap<Project, Properties>()
-    val configuredProjects = ConcurrentHashMap<Project, Boolean>()
 
-    const val TASK_NAME_INFRA_FINALIZE = "infraGradlePluginFinalize"
+    internal const val DefaultJunitVersion = "5.13.0"
+    internal const val DefaultMockitoVersion = "5.18.0"
+
+    val initedProjects = ConcurrentHashMap<Project, Properties>()
+
     const val TASK_NAME_FAST_BUILD = "fastBuild"
 
-    private val fastModeList = ConcurrentHashMap<String, Boolean>()
-    internal fun isInFastMode(project: Project): Boolean {
-        return fastModeList.containsKey(project.path)
-    }
 
-    internal fun Project.printFastModelDebug() {
-        println("[${this.path}] Fast model: ${isInFastMode(this)}")
-        println("fast list:")
-        println(fastModeList.keys.joinToString(System.lineSeparator()))
-    }
-
-    internal fun setFastMode(project: Project, enabled: Boolean) {
-        if(enabled) {
-            fastModeList[project.path] = true
-        }else {
-            fastModeList.remove(project.path)
-        }
-    }
 
 
     fun Project.setIsInfraBom(isBom: Boolean) {

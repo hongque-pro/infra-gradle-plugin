@@ -1,10 +1,12 @@
 group = "com.labijie.infra"
 version = Constants.projectVersion
 
+val jdk_version = 21
+
 dependencies {
+    implementation(gradleApi())
     api("org.jetbrains.kotlin:kotlin-stdlib-jdk8:${Constants.kotlinVersion}")
     api("org.jetbrains.kotlin:kotlin-reflect:${Constants.kotlinVersion}")
-    implementation(gradleApi())
     api("io.github.gradle-nexus:publish-plugin:${Constants.publishingPluginVersion}")
     api("org.jetbrains.kotlin:kotlin-allopen:${Constants.kotlinVersion}")
     api("org.jetbrains.kotlin:kotlin-gradle-plugin:${Constants.kotlinVersion}")
@@ -13,7 +15,6 @@ dependencies {
     api(Constants.gitPropertiesPluginArtifact)
     api(Constants.checkUpdatePluginArtifact)
 }
-
 
 plugins {
 
@@ -63,23 +64,18 @@ publishing {
 //}
 
 java {
-    sourceCompatibility = JavaVersion.VERSION_17
-    targetCompatibility = JavaVersion.VERSION_17
+    sourceCompatibility =  JavaVersion.toVersion(jdk_version)
+    targetCompatibility = JavaVersion.toVersion(jdk_version)
     withJavadocJar()
     withSourcesJar()
     toolchain {
-        languageVersion = JavaLanguageVersion.of(17)
+        languageVersion = JavaLanguageVersion.of(jdk_version)
     }
 }
 
 kotlin {
-    jvmToolchain {
-        languageVersion.set(JavaLanguageVersion.of(17))
-    }
     // Or shorter:
-    jvmToolchain(17)
-    // For example:
-    jvmToolchain(17)
+    jvmToolchain(jdk_version)
 }
 
 
@@ -91,17 +87,20 @@ fun getProxyMavenRepository(): String {
 
 repositories {
     mavenLocal()
-    maven {
-        setUrl(getProxyMavenRepository())
-        isAllowInsecureProtocol = true
+    getProxyMavenRepository().let {
+        maven {
+            setUrl(it)
+            isAllowInsecureProtocol = true
+        }
     }
+
     mavenCentral()
     gradlePluginPortal()
 }
 
 tasks.withType(JavaCompile::class.java) {
-    sourceCompatibility = "17"
-    targetCompatibility = "17"
+    sourceCompatibility = "$jdk_version"
+    targetCompatibility = "$jdk_version"
 }
 
 tasks.withType(Javadoc::class.java) {

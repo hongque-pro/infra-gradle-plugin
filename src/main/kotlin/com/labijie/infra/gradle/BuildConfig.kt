@@ -1,6 +1,5 @@
 package com.labijie.infra.gradle
 
-import com.labijie.infra.gradle.BuildConfig.useDefault
 import com.labijie.infra.gradle.Utils.apply
 import com.labijie.infra.gradle.Utils.configureFor
 import com.labijie.infra.gradle.Utils.the
@@ -12,6 +11,7 @@ import getPropertyOrCmdArgs
 import io.github.gradlenexus.publishplugin.NexusPublishExtension
 import org.gradle.api.JavaVersion
 import org.gradle.api.Project
+import org.gradle.api.artifacts.ModuleDependency
 import org.gradle.api.artifacts.dsl.RepositoryHandler
 import org.gradle.api.plugins.JavaPluginExtension
 import org.gradle.api.publish.PublishingExtension
@@ -20,15 +20,14 @@ import org.gradle.api.publish.plugins.PublishingPlugin
 import org.gradle.api.tasks.compile.JavaCompile
 import org.gradle.api.tasks.javadoc.Javadoc
 import org.gradle.api.tasks.testing.Test
-import org.gradle.internal.impldep.org.apache.maven.model.Plugin
+import org.gradle.internal.extensions.core.extra
 import org.gradle.jvm.toolchain.JavaLanguageVersion
 import org.gradle.jvm.toolchain.JavaToolchainService
 import org.gradle.plugins.signing.SigningExtension
-import org.jetbrains.kotlin.gradle.plugin.KotlinPlatformJvmPlugin
-import org.jetbrains.kotlin.gradle.plugin.PLUGIN_CLASSPATH_CONFIGURATION_NAME
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.plugin.extraProperties
-import org.jetbrains.kotlin.gradle.plugin.getKotlinPluginVersion
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+import org.jetbrains.kotlin.gradle.tasks.KotlinJvmCompile
 import org.jetbrains.kotlin.gradle.tasks.UsesKotlinJavaToolchain
 
 internal object BuildConfig {
@@ -75,7 +74,7 @@ internal object BuildConfig {
         }
         mavenCentral()
 
-        if(githubPackages.isNotEmpty()) {
+        if (githubPackages.isNotEmpty()) {
             val username = project.getPropertyOrCmdArgs("GITHUB_ACTOR", "gpr.user")
             val password = project.getPropertyOrCmdArgs("GITHUB_TOKEN", "gpr.key")
 
@@ -109,39 +108,170 @@ internal object BuildConfig {
         if (this.parent != null) {
             throw IllegalArgumentException("$methodName method only support root project.")
         }
+
     }
 
+    private fun getJvmTarget(version: String): JvmTarget {
+        val javaVersion = JavaVersion.toVersion(version)
+        val normalizedVersion = when (javaVersion) {
+            JavaVersion.VERSION_1_8 -> "8"
+            JavaVersion.VERSION_1_9 -> "9"
+            else -> javaVersion.toString()
+        }
+
+        return try {
+            JvmTarget.fromTarget(normalizedVersion)
+        } catch (e: IllegalArgumentException) {
+            // Kotlin 不支持的 jvmTarget（比如 "21"），回退到 JVM_17 或 JVM_20
+            println("⚠️ Kotlin compiler does not support jvmTarget = $normalizedVersion. Falling back to JVM_17")
+            JvmTarget.JVM_17
+        }
+    }
+
+    fun Project.setupMockitoAgent() {
+        val p = this
+
+        this.afterEvaluate { self ->
+
+            val hasVersion = p.rootProject.extra.has("mockitoVersion")
+            if(!hasVersion) {
+                val v = p.getTestResolvedVersion("org.mockito", "mockito-core")
+                if(v == null) {
+                    return@afterEvaluate
+                }
+                p.rootProject.extra.set("mockitoVersion", v)
+            }
+            val mockitoVersion = p.rootProject.extra.get("mockitoVersion")
+
+            val mockitoAgent = p.configurations.findByName("mockitoAgent")
+                ?: p.configurations.create("mockitoAgent") {
+                    it.isCanBeResolved = true
+                    it.isCanBeConsumed = false
+                    it.isVisible = false
+                }
+
+            val alreadyAdded = mockitoAgent.dependencies.any {
+                it.group == "org.mockito" && it.name == "mockito-core"
+            }
+
+            if (!alreadyAdded) {
+                val dep = p.dependencies.create("org.mockito:mockito-core:$mockitoVersion") as ModuleDependency
+                dep.isTransitive = false
+                p.dependencies.add("mockitoAgent", dep)
+                p.logger.lifecycle("Added mockito-core:$mockitoVersion to mockitoAgent.")
+            }
+
+            p.tasks.withType(Test::class.java).configureEach { task ->
+                task.doFirst {
+                    val agentJar = mockitoAgent
+                        .resolvedConfiguration
+                        .resolvedArtifacts
+                        .firstOrNull()
+                        ?.file
+
+                    if (agentJar != null) {
+                        task.jvmArgs("-javaagent:$agentJar")
+                        p.logger.lifecycle("Mockito agent injected: $agentJar")
+                    } else {
+                        p.logger.warn("Mockito agent JAR not found.")
+                    }
+                }
+            }
+        }
+    }
+
+    private fun Project.getTestResolvedVersion(group: String, name: String): String? {
+
+        val testImplementation = this.configurations.findByName("testImplementation") ?: return null
+
+        // 创建一个可解析的配置来继承 testImplementation
+        val resolvableConfig = this.configurations.create("resolvableTestImplForMockito") {
+            it.isCanBeResolved = true
+            it.isCanBeConsumed = false
+            it.extendsFrom(testImplementation)
+        }
+
+        // 解析依赖，确保 BOM 能解析出 mockito-core 的版本号
+        this.logger.lifecycle("Resolving testImplementation configuration for $group:$name...")
+        val resolved = try {
+            resolvableConfig.resolvedConfiguration.firstLevelModuleDependencies
+        } catch (e: Exception) {
+            this.logger.warn("Failed to resolve testImplementation: ${e.message}")
+            return null
+        }
+
+        val mockitoResolved = resolved.find {
+            it.moduleGroup == group && it.moduleName == name
+        }
+
+        if (mockitoResolved == null) {
+            this.logger.lifecycle("No $name found in testImplementation.")
+            return null
+        }
+
+        val version = mockitoResolved.moduleVersion
+        if (version == null) {
+            this.logger.warn("$name dependency found, but version is unknown.")
+            return null
+        }
+        return version
+    }
 
     fun Project.useDefault(
         isBom: Boolean,
         projectProperties: ProjectProperties
     ) {
-        this.repositories.useDefaultRepositories(this,projectProperties.useMavenProxy, projectProperties.githubRepositories)
+        this.repositories.useDefaultRepositories(
+            this,
+            projectProperties.useMavenProxy,
+            projectProperties.githubRepositories
+        )
+
         if (isBom) {
             return
         }
 
-        this.tasks.withType(JavaCompile::class.java) {
-            it.sourceCompatibility = projectProperties.jvmVersion
-            it.targetCompatibility = projectProperties.jvmVersion
+        project.pluginManager.apply("org.jetbrains.kotlin.jvm")
+
+        val jvm = getJvmTarget(projectProperties.jdkVersion)
+        project.logger.info("Use jvm target: ${jvm.target}")
+
+        this.tasks.withType(JavaCompile::class.java).all {
+            it.sourceCompatibility = jvm.target
+            it.targetCompatibility = jvm.target
             it.options.encoding = "UTF-8"
         }
 
-        this.configureFor(JavaPluginExtension::class.java) {
-            sourceCompatibility = JavaVersion.toVersion(projectProperties.jvmVersion)
-            targetCompatibility = JavaVersion.toVersion(projectProperties.jvmVersion)
+        this.tasks.withType(KotlinJvmCompile::class.java).all {
+            it.compilerOptions {
+                jvmTarget.set(jvm)
+            }
         }
+
+        this.tasks.withType(KotlinCompile::class.java).all {
+            it.compilerOptions {
+                jvmTarget.set(jvm)// 改成已支持的目
+            }
+        }
+
+        this.configureFor(JavaPluginExtension::class.java) {
+            sourceCompatibility = JavaVersion.toVersion(jvm.target)
+            targetCompatibility = JavaVersion.toVersion(jvm.target)
+        }
+
 
         val service = project.extensions.getByType(JavaToolchainService::class.java)
         val customLauncher = service.launcherFor {
-            it.languageVersion.set(JavaLanguageVersion.of(projectProperties.jvmVersion))
+            it.languageVersion.set(JavaLanguageVersion.of(projectProperties.jdkVersion))
         }
+
         project.tasks.withType(UsesKotlinJavaToolchain::class.java).configureEach {
             it.kotlinJavaToolchain.toolchain.use(customLauncher)
         }
 
+
         this.configureFor(JavaPluginExtension::class.java) {
-            if(projectProperties.includeDocument) {
+            if (projectProperties.includeDocument) {
                 withJavadocJar()
             }
             if (projectProperties.includeSource) {
@@ -161,6 +291,8 @@ internal object BuildConfig {
             }
         }
 
+
+
         this.dependencies.apply {
             this.add("api", platform("org.jetbrains.kotlin:kotlin-bom:${projectProperties.kotlinVersion}"))
             this.add("api", "org.jetbrains.kotlin:kotlin-stdlib-jdk8")
@@ -168,29 +300,34 @@ internal object BuildConfig {
 
             if (projectProperties.infraBomVersion.isNotBlank()) {
                 this.add("api", platform("com.labijie.bom:lib-dependencies:${projectProperties.infraBomVersion}"))
-                this.add("testImplementation", "org.jetbrains.kotlin:kotlin-test-junit5")
-                this.add("testImplementation", "org.junit.jupiter:junit-jupiter-api")
-                this.add("testImplementation", "org.junit.jupiter:junit-jupiter-engine")
-                this.add("testImplementation", "org.mockito:mockito-core")
-                this.add("testImplementation", "org.mockito:mockito-junit-jupiter")
             } else {
-                val junitVersion = "5.10.1"
-                val mockitoVersion = "5.7.0"
-                this.add("api", platform("org.junit:junit-bom:${junitVersion}"))
 
-                this.add("testImplementation", "org.jetbrains.kotlin:kotlin-test-junit5")
-                this.add("testImplementation", "org.junit.jupiter:junit-jupiter-api")
-                this.add("testImplementation", "org.junit.jupiter:junit-jupiter-engine")
-                this.add("testImplementation", "org.mockito:mockito-core:${mockitoVersion}")
-                this.add("testImplementation", "org.mockito:mockito-junit-jupiter:${mockitoVersion}")
+                this.add("api", platform("org.junit:junit-bom:${Utils.DefaultJunitVersion}"))
+                this.add("api", platform("org.mockito:mockito-bom:${Utils.DefaultMockitoVersion}"))
             }
-            /**
-            testImplementation "org.jetbrains.kotlin:kotlin-test-junit5:$kotlin_version"
-            testImplementation "org.junit.jupiter:junit-jupiter-api"
-            testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine"
-            testImplementation "org.mockito:mockito-all"
-             */
+
+
+            this.add("testImplementation", "org.jetbrains.kotlin:kotlin-test-junit5")
+            this.add("testImplementation", "org.junit.jupiter:junit-jupiter-api")
+            this.add("testImplementation", "org.junit.jupiter:junit-jupiter-params")
+            this.add("testImplementation", "org.junit.jupiter:junit-jupiter-engine")
+            this.add("testImplementation", "org.mockito:mockito-core")
+            this.add("testImplementation", "org.mockito:mockito-junit-jupiter")
         }
+
+
+
+        val hasMockito = configurations.findByName("testImplementation")
+            ?.dependencies
+            ?.any { it.group == "org.mockito" && it.name == "mockito-core" }
+            ?: false
+
+        val hasTest = this.tasks.findByName("test") != null
+
+        if(hasMockito && hasTest) {
+            this.setupMockitoAgent()
+        }
+
     }
 
 
@@ -198,8 +335,8 @@ internal object BuildConfig {
      * use io.github.gradle-nexus.publish-plugin to publish package to maven repository.
      * @param newHost Users registered in Sonatype after 24 February 2021 need to set this value to true
      */
-    fun Project.useNexusPublishPlugin(newHost:Boolean, configure: ((repo: NexusSettings) -> Unit)? = null) {
-        if(!this.extraProperties.has("__hasNexusPublishPlugin")) {
+    fun Project.useNexusPublishPlugin(newHost: Boolean, configure: ((repo: NexusSettings) -> Unit)? = null) {
+        if (!this.extraProperties.has("__hasNexusPublishPlugin")) {
             this.extraProperties["__hasNexusPublishPlugin"] = true
             this.mustBeRoot("useNexusPublishPlugin")
             this.apply(plugin = "io.github.gradle-nexus.publish-plugin")
@@ -308,7 +445,7 @@ internal object BuildConfig {
         url: () -> String?,
         username: () -> String?,
         password: () -> String?,
-        allowInsecureProtocol: (() ->Boolean)? = null,
+        allowInsecureProtocol: (() -> Boolean)? = null,
     ) {
 
         val p = this
@@ -368,7 +505,8 @@ internal object BuildConfig {
         username: String? = null,
         password: String? = null,
     ) {
-        this.usePublishRepository("Nexus",
+        this.usePublishRepository(
+            "Nexus",
             {
                 project.getPropertyOrCmdArgs("NEXUS_URL", "nexus.url") ?: url
             },
@@ -386,15 +524,16 @@ internal object BuildConfig {
      * refer:
      * https://docs.github.com/en/actions/publishing-packages/publishing-java-packages-with-gradle
      *
-     * @param githubActor github actor, can be get in github action auto.
-     * @param githubToken github token, can be get in github action auto.
+     * @param getGithubActor github actor, can be get in github action auto.
+     * @param getGithubToken github token, can be get in github action auto.
      *
      * Abort githubActor and githubToken more details:
      * https://docs.github.com/en/actions/security-guides/automatic-token-authentication
      */
     fun Project.useGitHubPackagesPub(
         owner: String,
-        repository: String) {
+        repository: String
+    ) {
         val repoName = "GitHubPackages"
         val url = "https://maven.pkg.github.com/${owner}/${repository}"
 
@@ -408,13 +547,15 @@ internal object BuildConfig {
     }
 
     private fun Project.getGithubActor(): String {
-        val defaultUser = if(project.extraProperties.has(githubUserExtra)) project.extraProperties.get(githubUserExtra).toString() else ""
+        val defaultUser = if (project.extraProperties.has(githubUserExtra)) project.extraProperties.get(githubUserExtra)
+            .toString() else ""
         return project.getPropertyOrCmdArgs("GITHUB_ACTOR", "gpr.user") ?: defaultUser
     }
 
-    private fun Project.getGithubToken() : String
-    {
-        val defaultToken = if(project.extraProperties.has(githubTokenExtra)) project.extraProperties.get(githubTokenExtra).toString() else ""
+    private fun Project.getGithubToken(): String {
+        val defaultToken =
+            if (project.extraProperties.has(githubTokenExtra)) project.extraProperties.get(githubTokenExtra)
+                .toString() else ""
         return project.getPropertyOrCmdArgs("GITHUB_TOKEN", "gpr.key") ?: defaultToken;
     }
 }

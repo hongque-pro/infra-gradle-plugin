@@ -44,58 +44,33 @@ class InfraPlugin : Plugin<Project> {
 
     private fun Project.configureFastMode() {
         val pr = this
-        if(pr.tasks.findByName("build") != null && pr.tasks.findByName(Utils.TASK_NAME_FAST_BUILD) == null) {
-            pr.tasks.register(Utils.TASK_NAME_FAST_BUILD, BuildOnlyTask::class.java) {
-                it.group = "build"
-                it.finalizedBy("build")
+
+        if (pr.tasks.findByName("build") != null && pr.tasks.findByName(Utils.TASK_NAME_FAST_BUILD) == null) {
+            pr.tasks.register(Utils.TASK_NAME_FAST_BUILD) { task ->
+                task.group = "build"
+                task.dependsOn("build")
             }
 
-            pr.tasks.register(Utils.TASK_NAME_INFRA_FINALIZE, ExitFastBuild::class.java)
+            // 全局提前标记 fast build 运行
+            pr.gradle.taskGraph.whenReady { taskGraph ->
+                val fastMode = taskGraph.allTasks.any { it.name == Utils.TASK_NAME_FAST_BUILD }
 
-            val skipTasks = pr.extensions.findByType(InfraPluginExtension::class.java)?.skipTasks
-            skipTasks?.let {
-                skipTasks.forEach {
-                    pr.tasks.findByName(it)?.apply {
-                        onlyIf("Skip in fast mode") {
-                            !Utils.isInFastMode(pr)
-                        }
+                if (fastMode) {
+                    val skipTasks = pr.extensions.findByType(InfraPluginExtension::class.java)?.skipTasks
+                    skipTasks?.forEach { taskName ->
+                        pr.tasks.findByName(taskName)?.enabled = false
                     }
-                }
-                pr.tasks.named("build") { t ->
-                    t.finalizedBy(Utils.TASK_NAME_INFRA_FINALIZE)
                 }
             }
         }
-
     }
 
     override fun apply(target: Project) {
         target.extensions.create(InfraPluginExtension.Name, InfraPluginExtension::class.java, target)
 
-
-
-
-        target.gradle.addListener(object : BuildListener {
-            override fun settingsEvaluated(settings: Settings) {
-
-            }
-
-            override fun projectsLoaded(gradle: Gradle) {
-
-            }
-
-            override fun projectsEvaluated(gradle: Gradle) {
-                gradle.rootProject.configureFastMode()
-                gradle.rootProject.childProjects.forEach { child ->
-                    child.value.configureFastMode()
-                }
-            }
-
-            @Deprecated("Deprecated in Java")
-            override fun buildFinished(result: BuildResult) {
-
-            }
-
-        })
+        target.afterEvaluate {
+            p->
+            target.configureFastMode()
+        }
     }
 }

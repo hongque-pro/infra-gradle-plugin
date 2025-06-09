@@ -103,7 +103,7 @@ open class InfraPluginExtension @Inject constructor(private val project: Project
         }
     }
 
-    fun useKspApi(version:String = DEFAULT_KSP_VERSION, configurationName:String = "implementation") {
+    fun useKspApi(version:String = DEFAULT_KSP_API_VERSION, configurationName:String = "implementation") {
         project.dependencies.apply {
             project.dependencies.add(configurationName, "com.google.devtools.ksp:symbol-processing-api:${version}")
         }
@@ -159,8 +159,11 @@ open class InfraPluginExtension @Inject constructor(private val project: Project
                 this.customProperties.putIfAbsent("project.name", project.name)
                 this.gitPropertiesName =  "git-info/git.properties"
                 this.failOnNoGitDirectory = false
+                this.dotGitDirectory.set(project.rootProject.layout.projectDirectory.dir(".git"))
             }
         }
+
+
         this.project.useDefault(
             self.isBom(),
             properties
@@ -182,7 +185,7 @@ open class InfraPluginExtension @Inject constructor(private val project: Project
 //        }
 
         usePublishPlugin(!properties.mavenPublishingOldHost)
-        forceVersion(properties.kotlinVersion, "org.jetbrains.kotlin", "kotlin-stdlib", "kotlin-reflect")
+        forceVersion(properties.kotlinVersion, "org.jetbrains.kotlin", "kotlin-stdlib", "kotlin-reflect", "kotlin-bom")
     }
 
     /**
@@ -258,7 +261,7 @@ open class InfraPluginExtension @Inject constructor(private val project: Project
                 add(config, "com.itfsw:mybatis-generator-plugin:${itfswPluginVersion}")
             }
             if (isMysqlDataSource) {
-                add(config, "mysql:mysql-connector-java:${mysqlConnectorVersion}")
+                add(config, "com.mysql:mysql-connector-j:${mysqlConnectorVersion}")
             }
         }
         project.configureFor(MybatisGeneratorExtension::class.java) {
