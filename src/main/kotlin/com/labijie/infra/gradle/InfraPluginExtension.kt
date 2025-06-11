@@ -6,11 +6,15 @@ import com.labijie.infra.gradle.BuildConfig.useDefault
 import com.labijie.infra.gradle.BuildConfig.useGithubAccount
 import com.labijie.infra.gradle.BuildConfig.useNexusPublishPlugin
 import com.labijie.infra.gradle.Utils.apply
+import com.labijie.infra.gradle.Utils.applyPluginIfNot
 import com.labijie.infra.gradle.Utils.configureFor
+import com.labijie.infra.gradle.Utils.isGlobalNativeBuild
+import com.labijie.infra.gradle.Utils.setGlobalNativeBuild
 import com.labijie.infra.gradle.internal.ProjectProperties
 import com.thinkimi.gradle.MybatisGeneratorExtension
 import configureTask
 import getProjectFile
+import org.graalvm.buildtools.gradle.dsl.GraalVMExtension
 import org.gradle.api.Action
 import org.gradle.api.Project
 import org.gradle.api.model.ObjectFactory
@@ -26,7 +30,10 @@ import kotlin.io.path.Path
  * @Date: 2021/12/7
  * @Description:
  */
-open class InfraPluginExtension @Inject constructor(private val project: Project, private val objectFactory: ObjectFactory) {
+open class InfraPluginExtension @Inject constructor(
+    private val project: Project,
+    private val objectFactory: ObjectFactory
+) {
     companion object {
         const val Name = "infra"
     }
@@ -71,13 +78,11 @@ open class InfraPluginExtension @Inject constructor(private val project: Project
     }
 
     fun useKaptPlugin(vararg kaptDependencies: Any, kaptConfig: Action<KaptExtension>? = null) {
-        if (!project.pluginManager.hasPlugin("org.jetbrains.kotlin.kapt")) {
-            project.apply(plugin = "org.jetbrains.kotlin.kapt")
+        project.applyPluginIfNot("org.jetbrains.kotlin.kapt")
+        kaptDependencies.forEach { dp ->
+            project.dependencies.add("kapt", dp)
         }
-        kaptDependencies.forEach {dp->
-            project.dependencies.add("kapt",dp)
-        }
-        if(kaptConfig != null) {
+        if (kaptConfig != null) {
             project.configureFor(KaptExtension::class.java) {
                 kaptConfig.execute(this)
             }
@@ -89,52 +94,64 @@ open class InfraPluginExtension @Inject constructor(private val project: Project
     }
 
 
-    fun useKspPlugin(vararg kspDependencies: Any, kspConfig: Action<KspExtension>? = null) {
-        if (!project.pluginManager.hasPlugin("com.google.devtools.ksp")) {
-            project.apply(plugin = "com.google.devtools.ksp")
+    fun useKspPlugin(vararg kspDependencies: Any, kspConfig: (KspExtension.() -> Unit)? = null) {
+        project.applyPluginIfNot("com.google.devtools.ksp")
+        kspDependencies.forEach { dp ->
+            project.dependencies.add("ksp", dp)
         }
-        kspDependencies.forEach {dp->
-            project.dependencies.add("ksp",dp)
-        }
-        if(kspConfig != null) {
-            project.configureFor(KspExtension::class.java) {
-                kspConfig.execute(this)
-            }
+        kspConfig?.let {
+            project.configureFor(KspExtension::class.java, kspConfig)
         }
     }
 
-    fun useKspApi(version:String = DEFAULT_KSP_API_VERSION, configurationName:String = "implementation") {
+    fun useNativeBuild(configurer: (GraalVMExtension.() -> Unit)? = null) {
+        project.setGlobalNativeBuild(true)
+        project.applyPluginIfNot("org.graalvm.buildtools.native")
+        configurer?.let {
+            project.configureFor(GraalVMExtension::class.java, configurer)
+        }
+    }
+
+    fun useKspApi(version: String = DEFAULT_KSP_API_VERSION, configurationName: String = "implementation") {
         project.dependencies.apply {
             project.dependencies.add(configurationName, "com.google.devtools.ksp:symbol-processing-api:${version}")
         }
     }
 
-    fun useInfraOrmGenerator(version: String = "2.0.+", outputDir: String? = null, packageName: String? = null) {
-        useKspPlugin("com.labijie.orm:exposed-generator:${version}")
-        if (!outputDir.isNullOrBlank() || !packageName.isNullOrBlank()) {
+    fun useInfraOrmGenerator(
+        generatorVersion: String = "2.0.+",
+        pojoProjectDir: String? = null,
+        pojoPackageName: String? = null,
+    ) {
+        useKspPlugin("com.labijie.orm:exposed-generator:${generatorVersion}")
+        project.afterEvaluate {
             project.configureFor(KspExtension::class.java) {
-                if (!outputDir.isNullOrBlank()) {
-                    var dir: String = outputDir
+                if (!pojoProjectDir.isNullOrBlank()) {
+                    var dir: String = pojoProjectDir
                     if (!File(dir).isAbsolute) {
-                        dir = Path(project.projectDir.absolutePath, outputDir).toString()
+                        dir = Path(project.projectDir.absolutePath, pojoProjectDir).toString()
                     }
-                    this.arg("exg_out_dir", dir)
+                    this.arg("orm.pojo_project_dir", dir)
                 }
-                if (!packageName.isNullOrBlank()) {
-                    this.arg("exg_package", packageName)
+                this.arg("orm.pojo_package", project.isGlobalNativeBuild().toString())
+                if(project.isGlobalNativeBuild()) {
+                    this.arg("orm.springboot_aot", "true")
                 }
+                project.group?.toString()?.let {
+                    this.arg("orm.table_group_id", it)
+                }
+                this.arg("orm.table_artifact_id", project.name)
             }
         }
+
     }
 
-    fun forceVersion(version:String, groupPrefix: String, vararg packageNamePrefix: String){
-        project.configurations.all {
-                conf->
-            conf.resolutionStrategy.eachDependency {
-                details->
-                if((details.requested.group == groupPrefix) &&
-                    (packageNamePrefix.isEmpty() || packageNamePrefix.any { details.requested.name.startsWith(it) }))
-                {
+    fun forceVersion(version: String, groupPrefix: String, vararg packageNamePrefix: String) {
+        project.configurations.all { conf ->
+            conf.resolutionStrategy.eachDependency { details ->
+                if ((details.requested.group == groupPrefix) &&
+                    (packageNamePrefix.isEmpty() || packageNamePrefix.any { details.requested.name.startsWith(it) })
+                ) {
                     details.useVersion(version)
                 }
             }
@@ -151,13 +168,13 @@ open class InfraPluginExtension @Inject constructor(private val project: Project
         val self = this
         val properties = ProjectProperties()
         action.execute(properties)
-        if(properties.gitPropertiesPluginEnabled) {
+        if (properties.gitPropertiesPluginEnabled) {
             project.apply(plugin = GitPropertiesPluginId)
             project.configureFor(GitPropertiesPluginExtension::class.java) {
                 this.customProperties.putIfAbsent("project.version", project.version)
                 this.customProperties.putIfAbsent("project.group", project.group)
                 this.customProperties.putIfAbsent("project.name", project.name)
-                this.gitPropertiesName =  "git-info/git.properties"
+                this.gitPropertiesName = "git-info/git.properties"
                 this.failOnNoGitDirectory = false
                 this.dotGitDirectory.set(project.rootProject.layout.projectDirectory.dir(".git"))
             }
@@ -169,21 +186,6 @@ open class InfraPluginExtension @Inject constructor(private val project: Project
             properties
         )
 
-//        if(project.tasks.findByName("cleanAndBuild") == null) {
-//            project.tasks.register("cleanAndBuild") {
-//                it.dependsOn("clean")
-//                it.group = "build"
-//                it.doLast {
-//                    task->
-//                    task.project.exec {
-//                        exec->
-//                        exec.executable = "gradle"
-//                        exec.args = listOf(":${project.name}:clean", ":${project.name}:build")
-//                    }
-//                }
-//            }
-//        }
-
         usePublishPlugin(!properties.mavenPublishingOldHost)
         forceVersion(properties.kotlinVersion, "org.jetbrains.kotlin", "kotlin-stdlib", "kotlin-reflect", "kotlin-bom")
     }
@@ -192,20 +194,22 @@ open class InfraPluginExtension @Inject constructor(private val project: Project
      * @param targetClassPath target bundle path (package path), example: com/labijie/application
      * @param resourceName resource file name, default is "messages"
      */
-    fun processSpringMessageSource(targetClassPath:String, resourceName: String = "messages", showLog: Boolean = false) {
+    fun processSpringMessageSource(
+        targetClassPath: String,
+        resourceName: String = "messages",
+        showLog: Boolean = false
+    ) {
         project.processResources {
-            from("src/main/resources") {
-                cp->
+            from("src/main/resources") { cp ->
                 cp.include("${resourceName}*.properties")
                 cp.into(targetClassPath)
             }
-            filesMatching("${resourceName}*.properties") {
-                cp->
+            filesMatching("${resourceName}*.properties") { cp ->
                 val include = cp.path.startsWith(targetClassPath)
-                if(showLog) {
-                    println("find message resource: ${cp.path} (${if(include) "included" else "excluded"}")
+                if (showLog) {
+                    println("find message resource: ${cp.path} (${if (include) "included" else "excluded"}")
                 }
-                if(!include) {
+                if (!include) {
                     cp.exclude()
                 }
             }
@@ -271,9 +275,11 @@ open class InfraPluginExtension @Inject constructor(private val project: Project
             this.mybatisProperties = objectFactory.mapProperty(String::class.java, String::class.java)
 
             if (propertiesFileConfigKey.isNotBlank()) {
-                this.mybatisProperties.set(mapOf(
-                    propertiesFileConfigKey to propertiesFile
-                ))
+                this.mybatisProperties.set(
+                    mapOf(
+                        propertiesFileConfigKey to propertiesFile
+                    )
+                )
             }
         }
     }

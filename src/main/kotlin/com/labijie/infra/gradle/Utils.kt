@@ -2,7 +2,6 @@ package com.labijie.infra.gradle
 
 import org.gradle.api.Project
 import org.gradle.api.plugins.PluginAware
-import org.gradle.internal.extensions.core.extra
 import org.jetbrains.kotlin.gradle.plugin.extraProperties
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
@@ -24,15 +23,22 @@ object Utils {
     const val TASK_NAME_FAST_BUILD = "fastBuild"
 
 
+    internal fun Project.setGlobalNativeBuild(boolean: Boolean) {
+        this.rootProject.extraProperties["infra_native_build"] = "true"
+    }
 
+    fun Project.isGlobalNativeBuild(): Boolean {
+        return if (this.rootProject.extraProperties.has("infra_native_build")) {
+            this.rootProject.extraProperties["infra_native_build"].toString().toBooleanStrictOrNull() ?: false
+        } else false
+    }
 
     fun Project.setIsInfraBom(isBom: Boolean) {
         project.extraProperties["infraIsBom"] = isBom
     }
 
     fun Project.isInfraBomProject(): Boolean {
-        if(project.extraProperties.has("infraIsBom"))
-        {
+        if (project.extraProperties.has("infraIsBom")) {
             return project.extraProperties.get("infraIsBom") as Boolean
         }
         return false;
@@ -70,4 +76,13 @@ object Utils {
         diff = if (diff != 0) diff else versionArray1.size - versionArray2.size
         return diff
     }
+
+    internal fun Project.applyPluginIfNot(id: String) {
+        if (!this.pluginManager.hasPlugin(id)) {
+            println("Plugin '$id' apply to ${this.name}")
+            this.apply(plugin = id)
+        }
+    }
+
+
 }

@@ -12,6 +12,7 @@ dependencies {
     api("org.jetbrains.kotlin:kotlin-gradle-plugin:${Constants.kotlinVersion}")
     api("${Constants.mybatisPluginLib}:${Constants.mybatisPluginVersion}")
     api("com.google.devtools.ksp:symbol-processing-gradle-plugin:${Constants.kspPluginVersion}")
+    api("org.graalvm.buildtools:native-gradle-plugin:${Constants.nativeBuildTool}")
     api(Constants.gitPropertiesPluginArtifact)
     api(Constants.checkUpdatePluginArtifact)
 }
@@ -80,14 +81,13 @@ kotlin {
 
 
 
-fun getProxyMavenRepository(): String {
-    val proxy: String? = System.getenv("MAVEN_PROXY")?.ifBlank { null }
-    return proxy ?: "https://maven.aliyun.com/nexus/content/groups/public/"
+fun getProxyMavenRepository(): String? {
+    return System.getenv("MAVEN_PROXY")?.ifBlank { null }
 }
 
 repositories {
     mavenLocal()
-    getProxyMavenRepository().let {
+    getProxyMavenRepository()?.let {
         maven {
             setUrl(it)
             isAllowInsecureProtocol = true

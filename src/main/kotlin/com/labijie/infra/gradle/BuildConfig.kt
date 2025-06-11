@@ -1,6 +1,7 @@
 package com.labijie.infra.gradle
 
 import com.labijie.infra.gradle.Utils.apply
+import com.labijie.infra.gradle.Utils.applyPluginIfNot
 import com.labijie.infra.gradle.Utils.configureFor
 import com.labijie.infra.gradle.Utils.the
 import com.labijie.infra.gradle.internal.NexusSettings
@@ -158,7 +159,6 @@ internal object BuildConfig {
                 val dep = p.dependencies.create("org.mockito:mockito-core:$mockitoVersion") as ModuleDependency
                 dep.isTransitive = false
                 p.dependencies.add("mockitoAgent", dep)
-                p.logger.lifecycle("Added mockito-core:$mockitoVersion to mockitoAgent.")
             }
 
             p.tasks.withType(Test::class.java).configureEach { task ->
@@ -231,7 +231,8 @@ internal object BuildConfig {
             return
         }
 
-        project.pluginManager.apply("org.jetbrains.kotlin.jvm")
+        project.applyPluginIfNot("org.jetbrains.kotlin.jvm")
+
 
         val jvm = getJvmTarget(projectProperties.jdkVersion)
         project.logger.info("Use jvm target: ${jvm.target}")

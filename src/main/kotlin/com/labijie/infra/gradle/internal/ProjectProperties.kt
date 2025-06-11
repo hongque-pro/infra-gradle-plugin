@@ -2,10 +2,7 @@ package com.labijie.infra.gradle.internal
 
 import com.labijie.infra.gradle.DEFAULT_INFRA_BOM_VERSION
 import com.labijie.infra.gradle.DEFAULT_JDK_VERSION
-import com.labijie.infra.gradle.DEFAULT_JVM_TARGET
 import com.labijie.infra.gradle.DEFAULT_KOTLIN_VERSION
-import isDisableMavenProxy
-import isGithubAction
 
 /**
  *
@@ -19,9 +16,10 @@ class ProjectProperties {
     var jdkVersion: String = DEFAULT_JDK_VERSION
     var includeSource: Boolean = false
     var includeDocument: Boolean = false
-    var useMavenProxy: Boolean = !isGithubAction() && !isDisableMavenProxy()
+    var useMavenProxy: Boolean = false
     var gitPropertiesPluginEnabled = true
     var mavenPublishingOldHost = false
+
     /**
      * GihHub repo
      *
