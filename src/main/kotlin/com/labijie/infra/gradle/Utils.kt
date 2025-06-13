@@ -62,6 +62,7 @@ object Utils {
     fun <T : Any> Project.the(extensionType: KClass<T>): T = extensions.getByType(extensionType.java)
 
 
+
     fun compareVersion(version1: String, version2: String): Int {
         val versionArray1 = version1.split("\\.").toTypedArray() //注意此处为正则匹配，不能用"."；
         val versionArray2 = version2.split("\\.").toTypedArray()

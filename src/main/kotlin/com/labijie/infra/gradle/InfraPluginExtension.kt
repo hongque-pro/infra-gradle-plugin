@@ -23,6 +23,7 @@ import org.jetbrains.kotlin.gradle.plugin.KaptExtension
 import java.io.File
 import javax.inject.Inject
 import kotlin.io.path.Path
+import kotlin.io.path.absolutePathString
 
 /**
  *
@@ -104,13 +105,6 @@ open class InfraPluginExtension @Inject constructor(
         }
     }
 
-    fun useNativeBuild(configurer: (GraalVMExtension.() -> Unit)? = null) {
-        project.setGlobalNativeBuild(true)
-        project.applyPluginIfNot("org.graalvm.buildtools.native")
-        configurer?.let {
-            project.configureFor(GraalVMExtension::class.java, configurer)
-        }
-    }
 
     fun useKspApi(version: String = DEFAULT_KSP_API_VERSION, configurationName: String = "implementation") {
         project.dependencies.apply {
@@ -129,11 +123,13 @@ open class InfraPluginExtension @Inject constructor(
                 if (!pojoProjectDir.isNullOrBlank()) {
                     var dir: String = pojoProjectDir
                     if (!File(dir).isAbsolute) {
-                        dir = Path(project.projectDir.absolutePath, pojoProjectDir).toString()
+                        dir = Path(project.projectDir.absolutePath, pojoProjectDir).absolutePathString()
                     }
                     this.arg("orm.pojo_project_dir", dir)
                 }
-                this.arg("orm.pojo_package", project.isGlobalNativeBuild().toString())
+                pojoPackageName?.let {
+                    this.arg("orm.pojo_package", pojoPackageName)
+                }
                 if(project.isGlobalNativeBuild()) {
                     this.arg("orm.springboot_aot", "true")
                 }

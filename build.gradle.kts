@@ -4,7 +4,8 @@ version = Constants.projectVersion
 val jdk_version = 21
 
 dependencies {
-    implementation(gradleApi())
+    compileOnly(gradleApi())
+    compileOnly(gradleKotlinDsl())
     api("org.jetbrains.kotlin:kotlin-stdlib-jdk8:${Constants.kotlinVersion}")
     api("org.jetbrains.kotlin:kotlin-reflect:${Constants.kotlinVersion}")
     api("io.github.gradle-nexus:publish-plugin:${Constants.publishingPluginVersion}")
