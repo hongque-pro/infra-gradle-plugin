@@ -1,5 +1,7 @@
 package com.labijie.infra.gradle
 
+import com.labijie.infra.gradle.BuildConfig.getGithubActor
+import com.labijie.infra.gradle.BuildConfig.getGithubToken
 import com.labijie.infra.gradle.Utils.apply
 import com.labijie.infra.gradle.Utils.applyPluginIfNot
 import com.labijie.infra.gradle.Utils.configureFor
@@ -31,8 +33,6 @@ import org.jetbrains.kotlin.gradle.plugin.extraProperties
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import org.jetbrains.kotlin.gradle.tasks.KotlinJvmCompile
 import org.jetbrains.kotlin.gradle.tasks.UsesKotlinJavaToolchain
-import org.springframework.boot.gradle.dsl.SpringBootExtension
-import kotlin.jvm.java
 
 internal object BuildConfig {
 
