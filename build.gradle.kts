@@ -6,6 +6,8 @@ val jdk_version = 21
 dependencies {
     compileOnly(gradleApi())
     compileOnly(gradleKotlinDsl())
+    compileOnly("org.graalvm.buildtools:native-gradle-plugin:${Constants.nativeBuildPlugin}")
+//    compileOnly("org.springframework.boot:spring-boot-gradle-plugin:${Constants.springbootPlugin}")
     api("org.jetbrains.kotlin:kotlin-stdlib-jdk8:${Constants.kotlinVersion}")
     api("org.jetbrains.kotlin:kotlin-reflect:${Constants.kotlinVersion}")
     api("io.github.gradle-nexus:publish-plugin:${Constants.publishingPluginVersion}")
@@ -13,7 +15,7 @@ dependencies {
     api("org.jetbrains.kotlin:kotlin-gradle-plugin:${Constants.kotlinVersion}")
     api("${Constants.mybatisPluginLib}:${Constants.mybatisPluginVersion}")
     api("com.google.devtools.ksp:symbol-processing-gradle-plugin:${Constants.kspPluginVersion}")
-    api("org.graalvm.buildtools:native-gradle-plugin:${Constants.nativeBuildTool}")
+
     api(Constants.gitPropertiesPluginArtifact)
     api(Constants.checkUpdatePluginArtifact)
 }

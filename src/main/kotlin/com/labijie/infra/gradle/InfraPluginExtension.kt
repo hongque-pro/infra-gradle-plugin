@@ -9,12 +9,10 @@ import com.labijie.infra.gradle.Utils.apply
 import com.labijie.infra.gradle.Utils.applyPluginIfNot
 import com.labijie.infra.gradle.Utils.configureFor
 import com.labijie.infra.gradle.Utils.isGlobalNativeBuild
-import com.labijie.infra.gradle.Utils.setGlobalNativeBuild
 import com.labijie.infra.gradle.internal.ProjectProperties
 import com.thinkimi.gradle.MybatisGeneratorExtension
 import configureTask
 import getProjectFile
-import org.graalvm.buildtools.gradle.dsl.GraalVMExtension
 import org.gradle.api.Action
 import org.gradle.api.Project
 import org.gradle.api.model.ObjectFactory
@@ -89,6 +87,7 @@ open class InfraPluginExtension @Inject constructor(
             }
         }
     }
+
 
     fun useSpringConfigurationProcessor(springbootVersion: String) {
         useKaptPlugin("org.springframework.boot:spring-boot-configuration-processor:${springbootVersion}")

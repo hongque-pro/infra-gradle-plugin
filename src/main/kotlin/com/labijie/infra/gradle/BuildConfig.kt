@@ -10,6 +10,7 @@ import com.labijie.infra.gradle.internal.ProjectProperties
 import findPropertyAndLocal
 import getPropertyOrCmdArgs
 import io.github.gradlenexus.publishplugin.NexusPublishExtension
+import org.graalvm.buildtools.gradle.dsl.GraalVMExtension
 import org.gradle.api.JavaVersion
 import org.gradle.api.Project
 import org.gradle.api.artifacts.ModuleDependency
@@ -30,6 +31,8 @@ import org.jetbrains.kotlin.gradle.plugin.extraProperties
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import org.jetbrains.kotlin.gradle.tasks.KotlinJvmCompile
 import org.jetbrains.kotlin.gradle.tasks.UsesKotlinJavaToolchain
+import org.springframework.boot.gradle.dsl.SpringBootExtension
+import kotlin.jvm.java
 
 internal object BuildConfig {
 
@@ -311,12 +314,22 @@ internal object BuildConfig {
             this.add("testImplementation", "org.jetbrains.kotlin:kotlin-test-junit5")
             this.add("testImplementation", "org.junit.jupiter:junit-jupiter-api")
             this.add("testImplementation", "org.junit.jupiter:junit-jupiter-params")
-            this.add("testImplementation", "org.junit.jupiter:junit-jupiter-engine")
+            this.add("testRuntimeOnly", "org.junit.jupiter:junit-jupiter-engine")
             this.add("testImplementation", "org.mockito:mockito-core")
             this.add("testImplementation", "org.mockito:mockito-junit-jupiter")
         }
 
 
+        project.plugins.withId("org.graalvm.buildtools.native") {
+            project.extensions.configure(GraalVMExtension::class.java) { extension ->
+                extension.binaries.named("test") {
+                    val contains = it.buildArgs.get().any { arg->arg.startsWith("--initialize-at-build-time") }
+                    if (!contains) {
+                        it.buildArgs.add("--initialize-at-build-time")
+                    }
+                }
+            }
+        }
 
         val hasMockito = configurations.findByName("testImplementation")
             ?.dependencies

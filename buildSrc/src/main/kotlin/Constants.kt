@@ -9,7 +9,10 @@ object Constants {
     const val mybatisPluginVersion = "2.4.1"
     const val mybatisPluginLib = "gradle.plugin.com.thinkimi.gradle:mybatis-generator-plugin"
     const val checkUpdatePlugin = "0.52.0"
-    const val nativeBuildTool = "0.10.6"
+
+    //build tools
+    const val nativeBuildPlugin = "0.10.6"
+    const val springbootPlugin = "3.5.0"
 
     const val checkUpdatePluginArtifact = "com.github.ben-manes:gradle-versions-plugin:$checkUpdatePlugin"
 
