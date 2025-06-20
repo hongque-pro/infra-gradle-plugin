@@ -1,5 +1,10 @@
 package com.labijie.infra.gradle
 
+import InfraConstants.DEFAULT_KSP_API_VERSION
+import InfraConstants.DEFAULT_MYBATIS_GENERATOR_CORE_VERSION
+import InfraConstants.DEFAULT_MYBATIS_GENERATOR_PLUGIN_VERSION
+import InfraConstants.DEFAULT_MYSQL_CONNECTOR_VERSION
+import InfraConstants.GitPropertiesPluginId
 import com.google.devtools.ksp.gradle.KspExtension
 import com.gorylenko.GitPropertiesPluginExtension
 import com.labijie.infra.gradle.BuildConfig.useDefault
@@ -8,7 +13,6 @@ import com.labijie.infra.gradle.BuildConfig.useNexusPublishPlugin
 import com.labijie.infra.gradle.Utils.apply
 import com.labijie.infra.gradle.Utils.applyPluginIfNot
 import com.labijie.infra.gradle.Utils.configureFor
-import com.labijie.infra.gradle.Utils.isGlobalNativeBuild
 import com.labijie.infra.gradle.internal.ProjectProperties
 import com.thinkimi.gradle.MybatisGeneratorExtension
 import configureTask
@@ -115,6 +119,7 @@ open class InfraPluginExtension @Inject constructor(
         generatorVersion: String = "2.0.+",
         pojoProjectDir: String? = null,
         pojoPackageName: String? = null,
+        generateAot: Boolean = true,
     ) {
         useKspPlugin("com.labijie.orm:exposed-generator:${generatorVersion}")
         project.afterEvaluate {
@@ -129,12 +134,7 @@ open class InfraPluginExtension @Inject constructor(
                 pojoPackageName?.let {
                     this.arg("orm.pojo_package", pojoPackageName)
                 }
-                if(project.isGlobalNativeBuild()) {
-                    this.arg("orm.springboot_aot", "true")
-                }
-                project.group?.toString()?.let {
-                    this.arg("orm.table_group_id", it)
-                }
+                this.arg("orm.springboot_aot", generateAot.toString())
                 this.arg("orm.table_artifact_id", project.name)
             }
         }

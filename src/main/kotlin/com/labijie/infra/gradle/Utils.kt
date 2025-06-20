@@ -23,16 +23,6 @@ object Utils {
     const val TASK_NAME_FAST_BUILD = "fastBuild"
 
 
-    internal fun Project.setGlobalNativeBuild(boolean: Boolean) {
-        this.rootProject.extraProperties["infra_native_build"] = "true"
-    }
-
-    fun Project.isGlobalNativeBuild(): Boolean {
-        return if (this.rootProject.extraProperties.has("infra_native_build")) {
-            this.rootProject.extraProperties["infra_native_build"].toString().toBooleanStrictOrNull() ?: false
-        } else false
-    }
-
     fun Project.setIsInfraBom(isBom: Boolean) {
         project.extraProperties["infraIsBom"] = isBom
     }

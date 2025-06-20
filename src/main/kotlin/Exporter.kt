@@ -1,7 +1,6 @@
+import InfraConstants.CheckUpdatePluginId
 import com.github.benmanes.gradle.versions.updates.DependencyUpdatesTask
 import com.github.benmanes.gradle.versions.updates.resolutionstrategy.ComponentSelectionWithCurrent
-import com.labijie.infra.gradle.CheckUpdatePluginId
-import com.labijie.infra.gradle.DEFAULT_KOTLIN_VERSION
 import com.labijie.infra.gradle.InfraPluginExtension
 import com.labijie.infra.gradle.Utils
 import com.labijie.infra.gradle.Utils.apply

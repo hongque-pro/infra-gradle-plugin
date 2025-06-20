@@ -319,13 +319,14 @@ internal object BuildConfig {
             this.add("testImplementation", "org.mockito:mockito-junit-jupiter")
         }
 
-
-        project.plugins.withId("org.graalvm.buildtools.native") {
-            project.extensions.configure(GraalVMExtension::class.java) { extension ->
-                extension.binaries.named("test") {
-                    val contains = it.buildArgs.get().any { arg->arg.startsWith("--initialize-at-build-time") }
-                    if (!contains) {
-                        it.buildArgs.add("--initialize-at-build-time")
+        if(project.pluginManager.hasPlugin("org.graalvm.buildtools.native")) {
+            project.plugins.withId("org.graalvm.buildtools.native") {
+                project.extensions.configure(GraalVMExtension::class.java) { extension ->
+                    extension.binaries.named("test") {
+                        val contains = it.buildArgs.get().any { arg -> arg.startsWith("--initialize-at-build-time") }
+                        if (!contains) {
+                            it.buildArgs.add("--initialize-at-build-time")
+                        }
                     }
                 }
             }
