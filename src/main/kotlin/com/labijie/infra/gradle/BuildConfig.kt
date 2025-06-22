@@ -30,6 +30,7 @@ import org.gradle.jvm.toolchain.JavaToolchainService
 import org.gradle.plugins.signing.SigningExtension
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.plugin.extraProperties
+import org.jetbrains.kotlin.gradle.targets.js.npm.includedRange
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import org.jetbrains.kotlin.gradle.tasks.KotlinJvmCompile
 import org.jetbrains.kotlin.gradle.tasks.UsesKotlinJavaToolchain
@@ -326,6 +327,12 @@ internal object BuildConfig {
                         val contains = it.buildArgs.get().any { arg -> arg.startsWith("--initialize-at-build-time") }
                         if (!contains) {
                             it.buildArgs.add("--initialize-at-build-time")
+                        }
+                    }
+                    extension.binaries.named("main"){ binary ->
+                        binary.resources { resources ->
+                            resources.includedPatterns.add("application.yml")
+                            resources.includedPatterns.add("application-*.yml")
                         }
                     }
                 }
