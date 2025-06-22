@@ -21,7 +21,8 @@ object Utils {
     val initedProjects = ConcurrentHashMap<Project, Properties>()
 
     const val TASK_NAME_FAST_BUILD = "fastBuild"
-
+    const val TASK_NAME_NATIVE_COMPILE_DEV = "nativeCompileDev"
+    const val TASK_NAME_NATIVE_RUN_DEV = "nativeRunDev"
 
     fun Project.setIsInfraBom(isBom: Boolean) {
         project.extraProperties["infraIsBom"] = isBom
