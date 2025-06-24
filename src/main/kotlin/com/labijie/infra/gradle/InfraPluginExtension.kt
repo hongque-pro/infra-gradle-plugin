@@ -164,7 +164,7 @@ open class InfraPluginExtension @Inject constructor(
         val properties = ProjectProperties()
         action.execute(properties)
         if (properties.gitPropertiesPluginEnabled) {
-            project.apply(plugin = GitPropertiesPluginId)
+            project.applyPluginIfNot(GitPropertiesPluginId)
             project.configureFor(GitPropertiesPluginExtension::class.java) {
                 this.customProperties.putIfAbsent("project.version", project.version)
                 this.customProperties.putIfAbsent("project.group", project.group)
@@ -182,7 +182,7 @@ open class InfraPluginExtension @Inject constructor(
         )
 
         usePublishPlugin(!properties.mavenPublishingOldHost)
-        forceVersion(properties.kotlinVersion, "org.jetbrains.kotlin", "kotlin-stdlib", "kotlin-reflect", "kotlin-bom")
+        forceVersion(InfraConstants.DEFAULT_KOTLIN_VERSION, "org.jetbrains.kotlin", "kotlin-stdlib", "kotlin-reflect", "kotlin-bom")
     }
 
     /**

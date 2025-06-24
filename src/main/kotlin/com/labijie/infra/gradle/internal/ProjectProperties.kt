@@ -12,7 +12,6 @@ import InfraConstants.DEFAULT_KOTLIN_VERSION
  */
 class ProjectProperties {
     var infraBomVersion: String = DEFAULT_INFRA_BOM_VERSION
-    var kotlinVersion: String = DEFAULT_KOTLIN_VERSION
     var jdkVersion: String = DEFAULT_JDK_VERSION
     var includeSource: Boolean = false
     var includeDocument: Boolean = false

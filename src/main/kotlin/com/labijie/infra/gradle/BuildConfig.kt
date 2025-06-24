@@ -30,7 +30,6 @@ import org.gradle.jvm.toolchain.JavaToolchainService
 import org.gradle.plugins.signing.SigningExtension
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.plugin.extraProperties
-import org.jetbrains.kotlin.gradle.targets.js.npm.includedRange
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import org.jetbrains.kotlin.gradle.tasks.KotlinJvmCompile
 import org.jetbrains.kotlin.gradle.tasks.UsesKotlinJavaToolchain
@@ -126,7 +125,7 @@ internal object BuildConfig {
 
         return try {
             JvmTarget.fromTarget(normalizedVersion)
-        } catch (e: IllegalArgumentException) {
+        } catch (_: IllegalArgumentException) {
             // Kotlin 不支持的 jvmTarget（比如 "21"），回退到 JVM_17 或 JVM_20
             println("⚠️ Kotlin compiler does not support jvmTarget = $normalizedVersion. Falling back to JVM_17")
             JvmTarget.JVM_17
@@ -299,7 +298,7 @@ internal object BuildConfig {
 
 
         this.dependencies.apply {
-            this.add("api", platform("org.jetbrains.kotlin:kotlin-bom:${projectProperties.kotlinVersion}"))
+            this.add("api", platform("org.jetbrains.kotlin:kotlin-bom:${InfraConstants.DEFAULT_KOTLIN_VERSION}"))
             this.add("api", "org.jetbrains.kotlin:kotlin-stdlib-jdk8")
             this.add("api", "org.jetbrains.kotlin:kotlin-reflect")
 
@@ -333,6 +332,8 @@ internal object BuildConfig {
                         binary.resources { resources ->
                             resources.includedPatterns.add("application.yml")
                             resources.includedPatterns.add("application-*.yml")
+                            resources.includedPatterns.add("logback.xml")
+                            resources.includedPatterns.add("git-info/git.properties")
                         }
                     }
                 }

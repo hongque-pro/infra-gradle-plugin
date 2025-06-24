@@ -13,6 +13,7 @@ dependencies {
     api("io.github.gradle-nexus:publish-plugin:${Constants.publishingPluginVersion}")
     api("org.jetbrains.kotlin:kotlin-allopen:${Constants.kotlinVersion}")
     api("org.jetbrains.kotlin:kotlin-gradle-plugin:${Constants.kotlinVersion}")
+    api("org.jetbrains.kotlin:kotlin-serialization:${Constants.kotlinVersion}")
     api("${Constants.mybatisPluginLib}:${Constants.mybatisPluginVersion}")
     api("com.google.devtools.ksp:symbol-processing-gradle-plugin:${Constants.kspPluginVersion}")
 
