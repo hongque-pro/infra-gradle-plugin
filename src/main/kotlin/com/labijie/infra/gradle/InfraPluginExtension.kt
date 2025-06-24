@@ -41,7 +41,9 @@ open class InfraPluginExtension @Inject constructor(private val project: Project
         "compileTestJava",
         "compileTestKotlin",
         "processTestResources",
-        "testClasses"
+        "testClasses",
+        "kaptGenerateStubsKotlin",
+        "kaptGenerateStubsTestKotlin"
     )
 
 
