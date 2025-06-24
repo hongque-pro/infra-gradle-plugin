@@ -7,6 +7,28 @@
 该插件旨在简化 Gradle 项目配置，几行代码就可以迅速开始一个项目。   
 <mark>注意</mark>: 仅支持 Kotlin DSL 的 gradle 项目。
 
+## 内置引入的插件
+
+infra gradle 会自动引入其他的插件，并且版本会被绑定且版本不可修改（版本不可修改受限于 gradle 的插件机制），如果内置插件的版本不适合您的项目，你可能无法使用 infra gradle plugin。
+   
+`Infra gradle 2.1.0` 内置插件，这些插件将自动带入，无需手动引入：
+
+> 如果你想使用 infra-gradle 又不想带入某个插件，你需要手动编译 infra-gradle 插件的源码，在 `build.gradle.kts` 中将 `api` 依赖改为 `compileOnly`，然后项目中手动引入这些插件。
+> 
+> `2.1.0`开始，infra-gradle 移除了 mybatis 插件引入，你需要手动引入它，可以通过 id("com.thinkimi.gradle.MybatisGenerator") 来引入，推荐你尝试 [Infra-Orm](https://github.com/hongque-pro/infra-orm) 代替 mybatis 获得更好的开发体验。
+
+| 插件 id                                     | DSL 手动引入方式                     | 版本       |
+|-------------------------------------------|--------------------------------|----------|
+| org.jetbrains.kotlin.jvm                  | kotlin("jvm")                  | 2.1.21   |
+| org.jetbrains.kotlin.plugin.allopen       | id                             | 2.1.21   |
+| org.jetbrains.kotlin.plugin.serialization | kotlin("plugin.serialization") | 2.1.21   |
+| com.google.devtools.ksp                   | id                             | 2.1.21-+ |
+| io.github.gradle-nexus.publish-plugin     | id                             | 2.0.0    |
+| com.gorylenko.gradle-git-properties       | id                             | 2.5.0    |
+| com.github.ben-manes.versions             | id                             | 0.52.0   |
+
+`2.1.0` 开始，不再支持可变 kotlin 依赖版本，因为我们发现当 kotlin 依赖包版本和 kotlin gradle 插件版本不一致时可能出现潜在的 BUG。
+
 ## 快速开始
 通过简单几行 DSL 代码，快速生成一个可编译、可发布到 maven 的 project: 
 ```kotlin
