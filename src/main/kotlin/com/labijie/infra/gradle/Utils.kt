@@ -18,7 +18,6 @@ object Utils {
     val initedProjects = ConcurrentHashMap<Project, Properties>()
     val configuredProjects = ConcurrentHashMap<Project, Boolean>()
 
-    const val TASK_NAME_INFRA_FINALIZE = "infraGradlePluginFinalize"
     const val TASK_NAME_FAST_BUILD = "fastBuild"
 
     private val fastModeList = ConcurrentHashMap<String, Boolean>()

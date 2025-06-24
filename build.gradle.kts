@@ -4,7 +4,7 @@ version = Constants.projectVersion
 dependencies {
     api("org.jetbrains.kotlin:kotlin-stdlib-jdk8:${Constants.kotlinVersion}")
     api("org.jetbrains.kotlin:kotlin-reflect:${Constants.kotlinVersion}")
-    implementation(gradleApi())
+    compileOnly(gradleApi())
     api("io.github.gradle-nexus:publish-plugin:${Constants.publishingPluginVersion}")
     api("org.jetbrains.kotlin:kotlin-allopen:${Constants.kotlinVersion}")
     api("org.jetbrains.kotlin:kotlin-gradle-plugin:${Constants.kotlinVersion}")

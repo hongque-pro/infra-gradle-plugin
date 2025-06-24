@@ -1,12 +1,8 @@
 package com.labijie.infra.gradle
 
-import org.gradle.BuildListener
-import org.gradle.BuildResult
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.Task
-import org.gradle.api.initialization.Settings
-import org.gradle.api.invocation.Gradle
 
 
 /**
@@ -44,56 +40,33 @@ class InfraPlugin : Plugin<Project> {
 
     private fun Project.configureFastMode() {
         val pr = this
-        val skipTasks = pr.extensions.findByType(InfraPluginExtension::class.java)?.skipTasks
-        skipTasks?.let {
-            skipTasks.forEach {
-                pr.tasks.findByName(it)?.apply {
-                    onlyIf("Skip in fast mode") {
-                        !Utils.isInFastMode(pr)
+
+        if (pr.tasks.findByName("build") != null && pr.tasks.findByName(Utils.TASK_NAME_FAST_BUILD) == null) {
+            pr.tasks.register(Utils.TASK_NAME_FAST_BUILD) { task ->
+                task.group = "build"
+                task.dependsOn("build")
+            }
+
+            // 全局提前标记 fast build 运行
+            pr.gradle.taskGraph.whenReady { taskGraph ->
+                val fastMode = taskGraph.allTasks.any { it.name == Utils.TASK_NAME_FAST_BUILD }
+
+                if (fastMode) {
+                    val skipTasks = pr.extensions.findByType(InfraPluginExtension::class.java)?.skipTasks
+                    skipTasks?.forEach { taskName ->
+                        pr.tasks.findByName(taskName)?.enabled = false
                     }
                 }
             }
-            pr.tasks.named("build") {
-                    t->t.finalizedBy(Utils.TASK_NAME_INFRA_FINALIZE)
-            }
         }
-
     }
 
     override fun apply(target: Project) {
         target.extensions.create(InfraPluginExtension.Name, InfraPluginExtension::class.java, target)
 
-        target.tasks.register(Utils.TASK_NAME_FAST_BUILD, BuildOnlyTask::class.java) {
-            it.group = "build"
-            it.finalizedBy("build")
+        target.afterEvaluate {
+                p-> target.configureFastMode()
         }
 
-        target.tasks.register(Utils.TASK_NAME_INFRA_FINALIZE, ExitFastBuild::class.java) {
-        }
-
-
-
-        target.gradle.addListener(object : BuildListener {
-            override fun settingsEvaluated(settings: Settings) {
-
-            }
-
-            override fun projectsLoaded(gradle: Gradle) {
-
-            }
-
-            override fun projectsEvaluated(gradle: Gradle) {
-                gradle.rootProject.configureFastMode()
-                gradle.rootProject.childProjects.forEach { child ->
-                    child.value.configureFastMode()
-                }
-            }
-
-            @Deprecated("Deprecated in Java")
-            override fun buildFinished(result: BuildResult) {
-
-            }
-
-        })
     }
 }
