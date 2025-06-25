@@ -34,8 +34,9 @@ open class InfraPluginExtension @Inject constructor(private val project: Project
     internal val skipTasks = mutableSetOf(
         "test",
         "kspKotlin",
-        "kaptKotlin",
         "kspTestKotlin",
+        "kaptKotlin",
+        "kaptTestKotlin",
         "javadoc",
         "javadocJar",
         "compileTestJava",
@@ -44,6 +45,7 @@ open class InfraPluginExtension @Inject constructor(private val project: Project
         "testClasses",
         "kaptGenerateStubsKotlin",
         "kaptGenerateStubsTestKotlin"
+
     )
 
 
