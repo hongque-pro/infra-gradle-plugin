@@ -77,6 +77,10 @@ open class InfraPluginExtension @Inject constructor(
         }
     }
 
+    fun useKotlinSerializationPlugin() {
+        return project.applyPluginIfNot("org.jetbrains.kotlin.plugin.serialization")
+    }
+
     fun useKaptPlugin(vararg kaptDependencies: Any, kaptConfig: Action<KaptExtension>? = null) {
         project.applyPluginIfNot("org.jetbrains.kotlin.kapt")
         kaptDependencies.forEach { dp ->

@@ -17,6 +17,7 @@ object Utils {
 
     internal const val DefaultJunitVersion = "5.13.0"
     internal const val DefaultMockitoVersion = "5.18.0"
+    internal const val DefaultSLF4JSimpleVersion = "2.0.17"
 
     val initedProjects = ConcurrentHashMap<Project, Properties>()
 

@@ -317,6 +317,12 @@ internal object BuildConfig {
             this.add("testRuntimeOnly", "org.junit.jupiter:junit-jupiter-engine")
             this.add("testImplementation", "org.mockito:mockito-core")
             this.add("testImplementation", "org.mockito:mockito-junit-jupiter")
+            this.add("testImplementation", "org.mockito:mockito-junit-jupiter")
+            if (projectProperties.infraBomVersion.isNotBlank()) {
+                this.add("testImplementation", "org.slf4j:slf4j-simple")
+            } else {
+                this.add("testImplementation", "org.slf4j:slf4j-simple:${Utils.DefaultSLF4JSimpleVersion}")
+            }
         }
 
         if(project.pluginManager.hasPlugin("org.graalvm.buildtools.native")) {
