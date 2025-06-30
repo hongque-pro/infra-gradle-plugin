@@ -12,6 +12,7 @@ import com.labijie.infra.gradle.Utils.applyPluginIfNot
 import com.labijie.infra.gradle.Utils.configureFor
 import com.labijie.infra.gradle.internal.ProjectProperties
 import configureTask
+import forceDependencyVersion
 import org.gradle.api.Action
 import org.gradle.api.Project
 import org.gradle.api.model.ObjectFactory
@@ -112,7 +113,7 @@ open class InfraPluginExtension @Inject constructor(
 
     fun useKspApi(version: String = DEFAULT_KSP_API_VERSION, configurationName: String = "implementation") {
         project.dependencies.apply {
-            project.dependencies.add(configurationName, "com.google.devtools.ksp:symbol-processing-api:${version}")
+            project.dependencies.add(configurationName, "com.google.devtools.ksp:symbol-processing-api:${version}}")
         }
     }
 
@@ -121,8 +122,13 @@ open class InfraPluginExtension @Inject constructor(
         pojoProjectDir: String? = null,
         pojoPackageName: String? = null,
         generateAot: Boolean = true,
+        pojoSerializable: Boolean = false,
+
     ) {
         useKspPlugin("com.labijie.orm:exposed-generator:${generatorVersion}")
+        if(pojoSerializable) {
+            useKotlinSerializationPlugin()
+        }
         project.afterEvaluate {
             project.configureFor(KspExtension::class.java) {
                 if (!pojoProjectDir.isNullOrBlank()) {
@@ -137,21 +143,10 @@ open class InfraPluginExtension @Inject constructor(
                 }
                 this.arg("orm.springboot_aot", generateAot.toString())
                 this.arg("orm.table_artifact_id", project.name)
+                this.arg("orm.pojo_kotlin_serializable", pojoSerializable.toString())
             }
         }
 
-    }
-
-    fun forceVersion(version: String, groupPrefix: String, vararg packageNamePrefix: String) {
-        project.configurations.all { conf ->
-            conf.resolutionStrategy.eachDependency { details ->
-                if ((details.requested.group == groupPrefix) &&
-                    (packageNamePrefix.isEmpty() || packageNamePrefix.any { details.requested.name.startsWith(it) })
-                ) {
-                    details.useVersion(version)
-                }
-            }
-        }
     }
 
     fun gitProperties(action: Action<GitPropertiesPluginExtension>) {
@@ -183,7 +178,15 @@ open class InfraPluginExtension @Inject constructor(
         )
 
         usePublishPlugin(!properties.mavenPublishingOldHost)
-        forceVersion(InfraConstants.DEFAULT_KOTLIN_VERSION, "org.jetbrains.kotlin", "kotlin-stdlib", "kotlin-reflect", "kotlin-bom")
+        this.project.forceDependencyVersion(InfraConstants.DEFAULT_KOTLIN_VERSION,
+            "org.jetbrains.kotlin",
+            "kotlin-stdlib",
+            "kotlin-reflect",
+            "kotlin-bom")
+
+        this.project.forceDependencyVersion(InfraConstants.DEFAULT_KOTLIN_SERIALIZATION_VERSION) {
+            g,m-> g == "org.jetbrains.kotlinx" && m.startsWith("kotlinx-serialization")
+        }
     }
 
     /**

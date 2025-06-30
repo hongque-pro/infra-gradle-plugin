@@ -94,7 +94,9 @@ inline fun <reified C : Task> Project.configureTask(name: String, configuration:
 }
 
 
-fun Project.forceDependencyGroupVersion(group: String, version: String) {
+
+
+fun Project.forceGroupVersion(group: String, version: String) {
     if (group.isNotBlank() && version.isNotBlank()) {
         configurations.all {
             it.resolutionStrategy.eachDependency { details ->
@@ -109,23 +111,26 @@ fun Project.forceDependencyGroupVersion(group: String, version: String) {
     }
 }
 
-fun Project.forceDependencyVersion(group: String, name: String, version: String) {
-    if (group.isNotBlank() && version.isNotBlank()) {
-        configurations.all {
-            it.resolutionStrategy.eachDependency { details ->
-                val requested = details.requested
-                if (requested.group == group && (name.isBlank() || requested.name == name)) {
-                    details.useVersion(version)
-                }
+fun Project.forceDependencyVersion(version: String, groupPrefix: String, vararg packageNamePrefix: String) {
+    project.configurations.all { conf ->
+        conf.resolutionStrategy.eachDependency { details ->
+            if ((details.requested.group == groupPrefix) &&
+                (packageNamePrefix.isEmpty() || packageNamePrefix.any { details.requested.name.startsWith(it) })
+            ) {
+                details.useVersion(version)
             }
         }
-    } else {
-        project.logger.warn("forceDependencyVersion require group, name, version parameters !")
     }
 }
 
-fun Project.forceDependencyVersion(group: String, version: String) {
-    forceDependencyVersion(group, "", version)
+fun Project.forceDependencyVersion(version: String, filter:(group: String, moduleName: String) -> Boolean) {
+    project.configurations.all { conf ->
+        conf.resolutionStrategy.eachDependency { details ->
+            if(filter(details.requested.group, details.requested.name)) {
+                details.useVersion(version)
+            }
+        }
+    }
 }
 
 fun isGithubAction(): Boolean {
