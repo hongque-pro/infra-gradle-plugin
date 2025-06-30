@@ -20,6 +20,10 @@ class ProjectProperties {
     var mavenPublishingOldHost = false
 
     /**
+     * Apply default Jvm args in this plugin
+     */
+    var defaultJvmArgs = true
+    /**
      * GihHub repo
      *
      * key: owner

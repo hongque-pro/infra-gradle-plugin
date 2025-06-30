@@ -249,6 +249,10 @@ internal object BuildConfig {
         this.tasks.withType(KotlinJvmCompile::class.java).all {
             it.compilerOptions {
                 jvmTarget.set(jvm)
+                if(projectProperties.defaultJvmArgs) {
+                    freeCompilerArgs.add("-Xjvm-default=all")
+                    freeCompilerArgs.add("-Xcontext-parameters")
+                }
             }
         }
 
@@ -323,12 +327,12 @@ internal object BuildConfig {
         if(project.pluginManager.hasPlugin("org.graalvm.buildtools.native")) {
             project.plugins.withId("org.graalvm.buildtools.native") {
                 project.extensions.configure(GraalVMExtension::class.java) { extension ->
-                    extension.binaries.named("test") {
-                        val contains = it.buildArgs.get().any { arg -> arg.startsWith("--initialize-at-build-time") }
-                        if (!contains) {
-                            it.buildArgs.add("--initialize-at-build-time")
-                        }
-                    }
+//                    extension.binaries.named("test") {
+//                        val contains = it.buildArgs.get().any { arg -> arg.startsWith("--initialize-at-build-time") }
+//                        if (!contains) {
+//                            it.buildArgs.add("--initialize-at-build-time")
+//                        }
+//                    }
                     extension.binaries.named("main"){ binary ->
                         binary.resources { resources ->
                             resources.includedPatterns.add("application.yml")

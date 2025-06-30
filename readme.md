@@ -11,7 +11,7 @@
 
 infra gradle 会自动引入其他的插件，并且版本会被绑定且版本不可修改（版本不可修改受限于 gradle 的插件机制），如果内置插件的版本不适合您的项目，你可能无法使用 infra gradle plugin。
    
-`Infra gradle 2.1.0` 内置插件，这些插件将自动带入，无需手动引入：
+`Infra gradle **2.1.0**` 内置插件，这些插件将自动带入，无需手动引入：
 
 > 如果你想使用 infra-gradle 又不想带入某个插件，你需要手动编译 infra-gradle 插件的源码，在 `build.gradle.kts` 中将 `api` 依赖改为 `compileOnly`，然后项目中手动引入这些插件。
 > 
@@ -19,10 +19,10 @@ infra gradle 会自动引入其他的插件，并且版本会被绑定且版本�
 
 | 插件 id                                     | DSL 手动引入方式                     | 版本       |
 |-------------------------------------------|--------------------------------|----------|
-| org.jetbrains.kotlin.jvm                  | kotlin("jvm")                  | 2.1.21   |
-| org.jetbrains.kotlin.plugin.allopen       | id                             | 2.1.21   |
-| org.jetbrains.kotlin.plugin.serialization | kotlin("plugin.serialization") | 2.1.21   |
-| com.google.devtools.ksp                   | id                             | 2.1.21-+ |
+| org.jetbrains.kotlin.jvm                  | kotlin("jvm")                  | 2.2.0    |
+| org.jetbrains.kotlin.plugin.allopen       | id                             | 2.2.0   |
+| org.jetbrains.kotlin.plugin.serialization | kotlin("plugin.serialization") | 2.2.0   |
+| com.google.devtools.ksp                   | id                             | 2.2.0-+ |
 | io.github.gradle-nexus.publish-plugin     | id                             | 2.0.0    |
 | com.gorylenko.gradle-git-properties       | id                             | 2.5.0    |
 | com.github.ben-manes.versions             | id                             | 0.52.0   |

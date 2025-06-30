@@ -1,7 +1,7 @@
 object Constants {
     const val projectVersion = "2.1.0"
 
-    const val kotlinVersion = "2.1.21"
+    const val kotlinVersion = "2.2.0"
     const val publishingPluginVersion = "2.0.0"
     const val gradlePublishPluginVersion = "1.3.1"
     const val testPlugin = false
@@ -12,7 +12,7 @@ object Constants {
 
     //build tools
     const val nativeBuildPlugin = "0.10.6"
-    const val springbootPlugin = "3.5.0"
+    const val springbootPlugin = "3.5.2"
 
     const val checkUpdatePluginArtifact = "com.github.ben-manes:gradle-versions-plugin:$checkUpdatePlugin"
 
