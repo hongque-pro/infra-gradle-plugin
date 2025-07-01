@@ -114,7 +114,7 @@ open class InfraPluginExtension @Inject constructor(
     }
 
 
-    fun useKspApi(version: String = KSP_VERSION, configurationName: Set<String> = setOf("implementation")) {
+    fun useKspApi(configurationName: Set<String> = setOf("implementation"), version: String = KSP_VERSION, ) {
         project.dependencies.apply {
             configurationName.forEach {
                 project.dependencies.add(it, "com.google.devtools.ksp:symbol-processing-api:${version}}")
