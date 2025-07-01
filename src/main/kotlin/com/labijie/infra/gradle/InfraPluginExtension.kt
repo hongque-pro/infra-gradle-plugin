@@ -3,7 +3,10 @@ package com.labijie.infra.gradle
 import InfraConstants
 import InfraConstants.DEFAULT_KSP_API_VERSION
 import InfraConstants.GitPropertiesPluginId
+import com.google.devtools.ksp.gradle.KSP_KOTLIN_BASE_VERSION
+import com.google.devtools.ksp.gradle.KSP_VERSION
 import com.google.devtools.ksp.gradle.KspExtension
+import com.google.devtools.ksp.gradle.model.Ksp
 import com.gorylenko.GitPropertiesPluginExtension
 import com.labijie.infra.gradle.BuildConfig.useDefault
 import com.labijie.infra.gradle.BuildConfig.useGithubAccount
@@ -111,9 +114,11 @@ open class InfraPluginExtension @Inject constructor(
     }
 
 
-    fun useKspApi(version: String = DEFAULT_KSP_API_VERSION, configurationName: String = "implementation") {
+    fun useKspApi(version: String = KSP_VERSION, configurationName: Set<String> = setOf("implementation")) {
         project.dependencies.apply {
-            project.dependencies.add(configurationName, "com.google.devtools.ksp:symbol-processing-api:${version}}")
+            configurationName.forEach {
+                project.dependencies.add(it, "com.google.devtools.ksp:symbol-processing-api:${version}}")
+            }
         }
     }
 
