@@ -1,10 +1,7 @@
 package com.labijie.infra.gradle.internal
 
-import com.labijie.infra.gradle.DEFAULT_INFRA_BOM_VERSION
-import com.labijie.infra.gradle.DEFAULT_JDK_VERSION
-import com.labijie.infra.gradle.DEFAULT_KOTLIN_VERSION
-import isDisableMavenProxy
-import isGithubAction
+import InfraDefaultVersions.DEFAULT_INFRA_BOM_VERSION
+import InfraDefaultVersions.DEFAULT_JDK_VERSION
 
 /**
  *
@@ -14,13 +11,17 @@ import isGithubAction
  */
 class ProjectProperties {
     var infraBomVersion: String = DEFAULT_INFRA_BOM_VERSION
-    var kotlinVersion: String = DEFAULT_KOTLIN_VERSION
-    var jvmVersion: String = DEFAULT_JDK_VERSION
+    var jdkVersion: String = DEFAULT_JDK_VERSION
     var includeSource: Boolean = false
     var includeDocument: Boolean = false
-    var useMavenProxy: Boolean = !isGithubAction() && !isDisableMavenProxy()
+    var useMavenProxy: Boolean = false
     var gitPropertiesPluginEnabled = true
     var mavenPublishingOldHost = false
+
+    /**
+     * Apply default Jvm args in this plugin
+     */
+    var defaultJvmArgs = true
     /**
      * GihHub repo
      *

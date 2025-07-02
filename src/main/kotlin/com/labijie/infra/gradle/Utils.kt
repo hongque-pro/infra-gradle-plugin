@@ -3,7 +3,6 @@ package com.labijie.infra.gradle
 import org.gradle.api.Project
 import org.gradle.api.plugins.PluginAware
 import org.jetbrains.kotlin.gradle.plugin.extraProperties
-import java.io.File
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 import kotlin.reflect.KClass
@@ -15,39 +14,23 @@ import kotlin.reflect.KClass
  * @Description:
  */
 object Utils {
+
+    internal const val DefaultJunitVersion = "5.13.0"
+    internal const val DefaultMockitoVersion = "5.18.0"
+    internal const val DefaultSLF4JSimpleVersion = "2.0.17"
+
     val initedProjects = ConcurrentHashMap<Project, Properties>()
-    val configuredProjects = ConcurrentHashMap<Project, Boolean>()
 
-    const val TASK_NAME_INFRA_FINALIZE = "infraGradlePluginFinalize"
     const val TASK_NAME_FAST_BUILD = "fastBuild"
-
-    private val fastModeList = ConcurrentHashMap<String, Boolean>()
-    internal fun isInFastMode(project: Project): Boolean {
-        return fastModeList.containsKey(project.path)
-    }
-
-    internal fun Project.printFastModelDebug() {
-        println("[${this.path}] Fast model: ${isInFastMode(this)}")
-        println("fast list:")
-        println(fastModeList.keys.joinToString(System.lineSeparator()))
-    }
-
-    internal fun setFastMode(project: Project, enabled: Boolean) {
-        if(enabled) {
-            fastModeList[project.path] = true
-        }else {
-            fastModeList.remove(project.path)
-        }
-    }
-
+    const val TASK_NAME_NATIVE_COMPILE_DEV = "nativeCompileDev"
+    const val TASK_NAME_NATIVE_RUN_DEV = "nativeRunDev"
 
     fun Project.setIsInfraBom(isBom: Boolean) {
         project.extraProperties["infraIsBom"] = isBom
     }
 
     fun Project.isInfraBomProject(): Boolean {
-        if(project.extraProperties.has("infraIsBom"))
-        {
+        if (project.extraProperties.has("infraIsBom")) {
             return project.extraProperties.get("infraIsBom") as Boolean
         }
         return false;
@@ -71,6 +54,7 @@ object Utils {
     fun <T : Any> Project.the(extensionType: KClass<T>): T = extensions.getByType(extensionType.java)
 
 
+
     fun compareVersion(version1: String, version2: String): Int {
         val versionArray1 = version1.split("\\.").toTypedArray() //注意此处为正则匹配，不能用"."；
         val versionArray2 = version2.split("\\.").toTypedArray()
@@ -85,4 +69,13 @@ object Utils {
         diff = if (diff != 0) diff else versionArray1.size - versionArray2.size
         return diff
     }
+
+    internal fun Project.applyPluginIfNot(id: String) {
+        if (!this.pluginManager.hasPlugin(id)) {
+            println("Plugin '$id' apply to ${this.name}")
+            this.apply(plugin = id)
+        }
+    }
+
+
 }
