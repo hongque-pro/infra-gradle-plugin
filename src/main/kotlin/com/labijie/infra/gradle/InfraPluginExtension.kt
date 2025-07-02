@@ -1,12 +1,9 @@
 package com.labijie.infra.gradle
 
-import InfraConstants
-import InfraConstants.DEFAULT_KSP_API_VERSION
-import InfraConstants.GitPropertiesPluginId
-import com.google.devtools.ksp.gradle.KSP_KOTLIN_BASE_VERSION
+import InfraDefaultVersions
+import InfraPlugins.GitPropertiesPluginId
 import com.google.devtools.ksp.gradle.KSP_VERSION
 import com.google.devtools.ksp.gradle.KspExtension
-import com.google.devtools.ksp.gradle.model.Ksp
 import com.gorylenko.GitPropertiesPluginExtension
 import com.labijie.infra.gradle.BuildConfig.useDefault
 import com.labijie.infra.gradle.BuildConfig.useGithubAccount
@@ -183,13 +180,13 @@ open class InfraPluginExtension @Inject constructor(
         )
 
         usePublishPlugin(!properties.mavenPublishingOldHost)
-        this.project.forceDependencyVersion(InfraConstants.DEFAULT_KOTLIN_VERSION,
+        this.project.forceDependencyVersion(InfraDefaultVersions.DEFAULT_KOTLIN_VERSION,
             "org.jetbrains.kotlin",
             "kotlin-stdlib",
             "kotlin-reflect",
             "kotlin-bom")
 
-        this.project.forceDependencyVersion(InfraConstants.DEFAULT_KOTLIN_SERIALIZATION_VERSION) {
+        this.project.forceDependencyVersion(InfraDefaultVersions.DEFAULT_KOTLIN_SERIALIZATION_VERSION) {
             g,m-> g == "org.jetbrains.kotlinx" && m.startsWith("kotlinx-serialization")
         }
     }

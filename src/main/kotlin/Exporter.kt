@@ -1,4 +1,4 @@
-import InfraConstants.CheckUpdatePluginId
+import InfraPlugins.CheckUpdatePluginId
 import com.github.benmanes.gradle.versions.updates.DependencyUpdatesTask
 import com.github.benmanes.gradle.versions.updates.resolutionstrategy.ComponentSelectionWithCurrent
 import com.labijie.infra.gradle.InfraPluginExtension

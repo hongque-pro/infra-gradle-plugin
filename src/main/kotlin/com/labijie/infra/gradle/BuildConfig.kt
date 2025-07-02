@@ -302,7 +302,7 @@ internal object BuildConfig {
 
 
         this.dependencies.apply {
-            this.add("api", platform("org.jetbrains.kotlin:kotlin-bom:${InfraConstants.DEFAULT_KOTLIN_VERSION}"))
+            this.add("api", platform("org.jetbrains.kotlin:kotlin-bom:${InfraDefaultVersions.DEFAULT_KOTLIN_VERSION}"))
             this.add("api", "org.jetbrains.kotlin:kotlin-stdlib-jdk8")
             this.add("api", "org.jetbrains.kotlin:kotlin-reflect")
 

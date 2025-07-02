@@ -12,7 +12,7 @@ object Constants {
 
     //build tools
     const val nativeBuildPlugin = "0.10.6"
-    const val springbootPlugin = "3.5.2"
+    const val springbootPlugin = "3.5.3"
 
     const val checkUpdatePluginArtifact = "com.github.ben-manes:gradle-versions-plugin:$checkUpdatePlugin"
 

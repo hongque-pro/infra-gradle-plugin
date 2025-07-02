@@ -1,8 +1,7 @@
 package com.labijie.infra.gradle.internal
 
-import InfraConstants.DEFAULT_INFRA_BOM_VERSION
-import InfraConstants.DEFAULT_JDK_VERSION
-import InfraConstants.DEFAULT_KOTLIN_VERSION
+import InfraDefaultVersions.DEFAULT_INFRA_BOM_VERSION
+import InfraDefaultVersions.DEFAULT_JDK_VERSION
 
 /**
  *

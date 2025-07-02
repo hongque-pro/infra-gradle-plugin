@@ -1,7 +1,7 @@
 
-import InfraConstants.DEFAULT_MYBATIS_GENERATOR_CORE_VERSION
-import InfraConstants.DEFAULT_MYBATIS_GENERATOR_PLUGIN_VERSION
-import InfraConstants.DEFAULT_MYSQL_CONNECTOR_VERSION
+import InfraDefaultVersions.DEFAULT_MYBATIS_GENERATOR_CORE_VERSION
+import InfraDefaultVersions.DEFAULT_MYBATIS_GENERATOR_PLUGIN_VERSION
+import InfraDefaultVersions.DEFAULT_MYSQL_CONNECTOR_VERSION
 import com.labijie.infra.gradle.InfraPluginExtension
 import com.labijie.infra.gradle.Utils.apply
 import com.labijie.infra.gradle.Utils.configureFor
