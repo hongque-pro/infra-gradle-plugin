@@ -67,14 +67,9 @@ open class InfraPluginExtension @Inject constructor(
         return project.plugins.findPlugin("java-platform") != null
     }
 
-    /**
-     *  @param newMavenHost Users registered in Sonatype after 24 February 2021 need to set this value to true
-     */
-    private fun usePublishPlugin(newMavenHost: Boolean = true) {
+    private fun usePublishPlugin() {
         if (project.parent == null) {
-            this.project.useNexusPublishPlugin(newMavenHost)
-        } else {
-            this.project.rootProject.useNexusPublishPlugin(newMavenHost)
+            this.project.useNexusPublishPlugin()
         }
     }
 
@@ -179,7 +174,7 @@ open class InfraPluginExtension @Inject constructor(
             properties
         )
 
-        usePublishPlugin(!properties.mavenPublishingOldHost)
+        usePublishPlugin()
         this.project.forceDependencyVersion(InfraDefaultVersions.DEFAULT_KOTLIN_VERSION,
             "org.jetbrains.kotlin",
             "kotlin-stdlib",

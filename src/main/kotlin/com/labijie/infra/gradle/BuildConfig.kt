@@ -363,7 +363,7 @@ internal object BuildConfig {
      * use io.github.gradle-nexus.publish-plugin to publish package to maven repository.
      * @param newHost Users registered in Sonatype after 24 February 2021 need to set this value to true
      */
-    fun Project.useNexusPublishPlugin(newHost: Boolean, configure: ((repo: NexusSettings) -> Unit)? = null) {
+    fun Project.useNexusPublishPlugin(configure: ((repo: NexusSettings) -> Unit)? = null) {
         if (!this.extraProperties.has("__hasNexusPublishPlugin")) {
             this.extraProperties["__hasNexusPublishPlugin"] = true
             this.mustBeRoot("useNexusPublishPlugin")
@@ -375,18 +375,15 @@ internal object BuildConfig {
                     val settings = NexusSettings()
                     configure?.invoke(settings)
                     it.repositories.apply {
+                        //sonatype()
+
                         sonatype { st ->
                             st.apply {
-                                if (newHost) {
-                                    nexusUrl.set(uri("https://s01.oss.sonatype.org/service/local/"))
-                                    snapshotRepositoryUrl.set(uri("https://s01.oss.sonatype.org/content/repositories/snapshots/"))
-                                }
-                                if (u != null) {
-                                    username.set(u)
-                                    if (p != null) {
-                                        password.set(p)
-                                    }
-                                }
+                                //refer: https://central.sonatype.org/publish/publish-portal-ossrh-staging-api/#plugins-tested-for-compatibility
+                                nexusUrl.set(uri("https://ossrh-staging-api.central.sonatype.com/service/local/"))
+                                snapshotRepositoryUrl.set(uri("https://central.sonatype.com/repository/maven-snapshots/"))
+                                username.set(u)
+                                password.set(p)
                             }
                         }
                     }

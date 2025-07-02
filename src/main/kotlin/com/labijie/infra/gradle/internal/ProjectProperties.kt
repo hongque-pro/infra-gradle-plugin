@@ -16,7 +16,6 @@ class ProjectProperties {
     var includeDocument: Boolean = false
     var useMavenProxy: Boolean = false
     var gitPropertiesPluginEnabled = true
-    var mavenPublishingOldHost = false
 
     /**
      * Apply default Jvm args in this plugin
