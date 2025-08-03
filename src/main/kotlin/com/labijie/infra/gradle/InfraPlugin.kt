@@ -63,13 +63,14 @@ class InfraPlugin : Plugin<Project> {
             // 全局提前标记 fast build 运行
             pr.gradle.taskGraph.whenReady { taskGraph ->
                 val fastMode = taskGraph.allTasks.any { it.name == Utils.TASK_NAME_FAST_BUILD }
+                val fastLibraryMode = taskGraph.allTasks.any { it.name == Utils.TASK_NAME_FAST_BUILD_LIBRARY }
 
                 if (fastMode) {
                     val skipTasks = pr.extensions.findByType(InfraPluginExtension::class.java)?.skipTasks
                     skipTasks?.forEach { taskName ->
                         pr.tasks.findByName(taskName)?.enabled = false
                     }
-                } else {
+                } else if(fastLibraryMode) {
                     val skipTasks = pr.extensions.findByType(InfraPluginExtension::class.java)?.skipTasks
                     val libraryTasks = pr.extensions.findByType(InfraPluginExtension::class.java)?.libraryTasks ?: emptyList()
                     skipTasks?.filter { skipTask-> !libraryTasks.contains(skipTask) }?.forEach { taskName ->
