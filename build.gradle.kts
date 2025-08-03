@@ -1,5 +1,7 @@
+val pluginVersion = "2.1.1"
+
 group = "com.labijie.infra"
-version = Constants.projectVersion
+version = pluginVersion
 
 val jdk_version = 21
 
@@ -27,7 +29,7 @@ plugins {
     kotlin("jvm") version Constants.kotlinVersion
     id("com.gradle.plugin-publish") version Constants.gradlePublishPluginVersion
     if(Constants.testPlugin) {
-        id("com.labijie.infra") version Constants.projectVersion apply false
+        id("com.labijie.infra") version pluginVersion apply false
     }
     id("maven-publish")
     id("java-gradle-plugin")
@@ -41,7 +43,7 @@ gradlePlugin {
             displayName = "infra gradle plugin"
             description = "Build toolkit to help you configure gradle project"
             implementationClass = "com.labijie.infra.gradle.InfraPlugin"
-            tags = listOf("infra", "labijie", "template")
+            tags = listOf("infra", "labijie", "template", "spring")
         }
     }
 
