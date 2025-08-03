@@ -49,10 +49,12 @@ open class InfraPluginExtension @Inject constructor(
         "processTestResources",
         "testClasses",
         "kaptGenerateStubsKotlin",
-        "kaptGenerateStubsTestKotlin"
+        "kaptGenerateStubsTestKotlin",
     )
 
     internal val libraryTasks = mutableSetOf(
+        "kaptGenerateStubsKotlin",
+        "kaptGenerateStubsTestKotlin",
         "kaptKotlin"
     )
 
