@@ -99,7 +99,7 @@ open class InfraPluginExtension @Inject constructor(
     }
 
     fun Project.addDependencyIfAbsent(configurationName: String, depNotation: String) {
-        val kaptConfig = configurations.getByName("kapt")
+        val kaptConfig = configurations.getByName(configurationName)
 
         val (group, name) = depNotation.split(":").let {
             it.getOrNull(0) to it.getOrNull(1)
@@ -110,7 +110,7 @@ open class InfraPluginExtension @Inject constructor(
         }
 
         if (!alreadyExists) {
-            dependencies.add("kapt", depNotation)
+            dependencies.add(configurationName, depNotation)
         }
     }
 
