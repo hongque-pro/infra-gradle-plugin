@@ -55,6 +55,11 @@ class InfraPlugin : Plugin<Project> {
                 task.dependsOn("build")
             }
 
+            pr.tasks.register(Utils.TASK_NAME_FAST_BUILD_LIBRARY) { task ->
+                task.group = "build"
+                task.dependsOn("build")
+            }
+
             // 全局提前标记 fast build 运行
             pr.gradle.taskGraph.whenReady { taskGraph ->
                 val fastMode = taskGraph.allTasks.any { it.name == Utils.TASK_NAME_FAST_BUILD }
@@ -64,18 +69,27 @@ class InfraPlugin : Plugin<Project> {
                     skipTasks?.forEach { taskName ->
                         pr.tasks.findByName(taskName)?.enabled = false
                     }
+                } else {
+                    val skipTasks = pr.extensions.findByType(InfraPluginExtension::class.java)?.skipTasks
+                    val libraryTasks = pr.extensions.findByType(InfraPluginExtension::class.java)?.libraryTasks ?: emptyList()
+                    skipTasks?.filter { skipTask-> !libraryTasks.contains(skipTask) }?.forEach { taskName ->
+                        pr.tasks.findByName(taskName)?.enabled = false
+                    }
                 }
             }
+
         }
     }
 
     fun setProfileToAotProcessTasks(project: Project, taskGraph: TaskExecutionGraph, profile: String) {
         taskGraph.allTasks.filter { t ->
-            t.name.equals("processAot", ignoreCase = true) && t.javaClass.name.removeSuffix("_Decorated") == "org.springframework.boot.gradle.tasks.aot.ProcessAot"
+            t.name.equals(
+                "processAot",
+                ignoreCase = true
+            ) && t.javaClass.name.removeSuffix("_Decorated") == "org.springframework.boot.gradle.tasks.aot.ProcessAot"
         }.let { tasks ->
-            tasks.forEach {
-                    task->
-                if(task is JavaExec) {
+            tasks.forEach { task ->
+                if (task is JavaExec) {
                     task.environment.putIfAbsent("SPRING_PROFILES_ACTIVE", profile)
                     task.environment["SPRING_PROFILES_ACTIVE"] = profile
                     println("Inject spring.profiles.active=dev,local to project : ${project.name}.")
@@ -114,11 +128,12 @@ class InfraPlugin : Plugin<Project> {
 
 
                     project.gradle.taskGraph.whenReady { taskGraph ->
-                        val devProfile = taskGraph.allTasks.any { it.name == TASK_NAME_NATIVE_COMPILE_DEV || it.name == TASK_NAME_NATIVE_RUN_DEV }
+                        val devProfile =
+                            taskGraph.allTasks.any { it.name == TASK_NAME_NATIVE_COMPILE_DEV || it.name == TASK_NAME_NATIVE_RUN_DEV }
                         val prodProfile = taskGraph.allTasks.any { it.name == TASK_NAME_NATIVE_COMPILE_PROD }
                         if (devProfile) {
                             setProfileToAotProcessTasks(project, taskGraph, "dev,local")
-                        }else if(prodProfile) {
+                        } else if (prodProfile) {
                             setProfileToAotProcessTasks(project, taskGraph, "prod")
                         }
 
@@ -131,8 +146,7 @@ class InfraPlugin : Plugin<Project> {
     override fun apply(target: Project) {
         target.extensions.create(InfraPluginExtension.Name, InfraPluginExtension::class.java, target)
         registerNativeTasks(target)
-        target.afterEvaluate {
-            p->
+        target.afterEvaluate { p ->
             target.configureFastMode()
         }
     }

@@ -52,6 +52,11 @@ open class InfraPluginExtension @Inject constructor(
         "kaptGenerateStubsTestKotlin"
     )
 
+    internal val libraryTasks = mutableSetOf(
+        "kaptKotlin"
+    )
+
+    public val infraProperties: ProjectProperties = ProjectProperties()
 
     private fun Project.processResources(configure: ProcessResources.() -> Unit) {
         this.configureTask(name = "processResources", configuration = configure)
@@ -77,10 +82,14 @@ open class InfraPluginExtension @Inject constructor(
         return project.applyPluginIfNot("org.jetbrains.kotlin.plugin.serialization")
     }
 
-    fun useKaptPlugin(vararg kaptDependencies: Any, kaptConfig: Action<KaptExtension>? = null) {
+    /**
+     * @param kaptDependencies dependency artifact.
+     * example: "com.example:plugin:0.0.1"
+     */
+    fun useKaptPlugin(vararg kaptDependencies: String, kaptConfig: Action<KaptExtension>? = null) {
         project.applyPluginIfNot("org.jetbrains.kotlin.kapt")
         kaptDependencies.forEach { dp ->
-            project.dependencies.add("kapt", dp)
+            project.addDependencyIfAbsent("kapt", dp)
         }
         if (kaptConfig != null) {
             project.configureFor(KaptExtension::class.java) {
@@ -89,16 +98,36 @@ open class InfraPluginExtension @Inject constructor(
         }
     }
 
+    fun Project.addDependencyIfAbsent(configurationName: String, depNotation: String) {
+        val kaptConfig = configurations.getByName("kapt")
 
-    fun useSpringConfigurationProcessor(springbootVersion: String) {
-        useKaptPlugin("org.springframework.boot:spring-boot-configuration-processor:${springbootVersion}")
+        val (group, name) = depNotation.split(":").let {
+            it.getOrNull(0) to it.getOrNull(1)
+        }
+
+        val alreadyExists = kaptConfig.dependencies.any {
+            it.group == group && it.name == name
+        }
+
+        if (!alreadyExists) {
+            dependencies.add("kapt", depNotation)
+        }
+    }
+
+    fun useSpringConfigurationProcessor(springbootVersion: String? = null) {
+        val version = springbootVersion ?: infraProperties.infraBomVersion
+        useKaptPlugin("org.springframework.boot:spring-boot-configuration-processor:${version}")
     }
 
 
-    fun useKspPlugin(vararg kspDependencies: Any, kspConfig: (KspExtension.() -> Unit)? = null) {
+    /**
+     * @param kspDependencies dependency artifact.
+     * example: "com.example:plugin:0.0.1"
+     */
+    fun useKspPlugin(vararg kspDependencies: String, kspConfig: (KspExtension.() -> Unit)? = null) {
         project.applyPluginIfNot("com.google.devtools.ksp")
         kspDependencies.forEach { dp ->
-            project.dependencies.add("ksp", dp)
+            project.addDependencyIfAbsent("ksp", dp)
         }
         kspConfig?.let {
             project.configureFor(KspExtension::class.java, kspConfig)
@@ -154,9 +183,9 @@ open class InfraPluginExtension @Inject constructor(
 
     fun useDefault(action: Action<in ProjectProperties>) {
         val self = this
-        val properties = ProjectProperties()
-        action.execute(properties)
-        if (properties.gitPropertiesPluginEnabled) {
+        action.execute(infraProperties)
+
+        if (infraProperties.gitPropertiesPluginEnabled) {
             project.applyPluginIfNot(GitPropertiesPluginId)
             project.configureFor(GitPropertiesPluginExtension::class.java) {
                 this.customProperties.putIfAbsent("project.version", project.version)
@@ -171,7 +200,7 @@ open class InfraPluginExtension @Inject constructor(
 
         this.project.useDefault(
             self.isBom(),
-            properties
+            infraProperties
         )
 
         usePublishPlugin()

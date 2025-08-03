@@ -1,3 +1,4 @@
+import InfraDefaultVersions.DEFAULT_INFRA_BOM_VERSION
 import InfraPlugins.CheckUpdatePluginId
 import com.github.benmanes.gradle.versions.updates.DependencyUpdatesTask
 import com.github.benmanes.gradle.versions.updates.resolutionstrategy.ComponentSelectionWithCurrent
@@ -5,6 +6,7 @@ import com.labijie.infra.gradle.InfraPluginExtension
 import com.labijie.infra.gradle.Utils
 import com.labijie.infra.gradle.Utils.apply
 import com.labijie.infra.gradle.Utils.configureFor
+import com.labijie.infra.gradle.internal.ProjectProperties
 import org.gradle.api.Action
 import org.gradle.api.Project
 import org.gradle.api.Task
@@ -163,3 +165,18 @@ fun isInCIPipeline(): Boolean {
 fun isDisableMavenProxy(): Boolean {
     return !System.getenv("NO_MAVEN_PROXY").isNullOrBlank()
 }
+
+
+val Project.infraProperties: ProjectProperties
+    get() {
+        val ext = this.extensions.getByType(InfraPluginExtension::class.java)
+        if(ext != null) {
+            return ext.infraProperties
+        }
+        return ProjectProperties()
+    }
+
+val Project.infraBomVersion: String
+    get() {
+        return this.infraProperties.infraBomVersion
+    }
