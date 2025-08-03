@@ -1,7 +1,6 @@
-val pluginVersion = "2.1.1"
 
 group = "com.labijie.infra"
-version = pluginVersion
+version = Constants.pluginVersion
 
 val jdk_version = 21
 
@@ -29,7 +28,7 @@ plugins {
     kotlin("jvm") version Constants.kotlinVersion
     id("com.gradle.plugin-publish") version Constants.gradlePublishPluginVersion
     if(Constants.testPlugin) {
-        id("com.labijie.infra") version pluginVersion apply false
+        id("com.labijie.infra") version Constants.pluginVersion apply false
     }
     id("maven-publish")
     id("java-gradle-plugin")
