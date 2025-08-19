@@ -100,6 +100,22 @@ open class InfraPluginExtension @Inject constructor(
         }
     }
 
+    fun Project.addDependencyIfAbsent(configurationName: String, depNotation: Project) {
+        val kaptConfig = configurations.getByName(configurationName)
+
+        val (group, name) = depNotation.let {
+            it.group to it.name
+        }
+
+        val alreadyExists = kaptConfig.dependencies.any {
+            it.group == group && it.name == name
+        }
+
+        if (!alreadyExists) {
+            dependencies.add(configurationName, depNotation)
+        }
+    }
+
     fun Project.addDependencyIfAbsent(configurationName: String, depNotation: String) {
         val kaptConfig = configurations.getByName(configurationName)
 
@@ -131,6 +147,14 @@ open class InfraPluginExtension @Inject constructor(
         kspDependencies.forEach { dp ->
             project.addDependencyIfAbsent("ksp", dp)
         }
+        kspConfig?.let {
+            project.configureFor(KspExtension::class.java, kspConfig)
+        }
+    }
+
+    fun useKspPlugin(dependencyProject: Project, kspConfig: (KspExtension.() -> Unit)? = null) {
+        project.applyPluginIfNot("com.google.devtools.ksp")
+        project.dependencies.add("ksp", dependencyProject)
         kspConfig?.let {
             project.configureFor(KspExtension::class.java, kspConfig)
         }
