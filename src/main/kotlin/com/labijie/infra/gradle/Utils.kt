@@ -27,6 +27,9 @@ object Utils {
     const val TASK_NAME_NATIVE_COMPILE_PROD = "nativeCompileProd"
     const val TASK_NAME_NATIVE_RUN_DEV = "nativeRunDev"
 
+    const val TASK_NAME_NATIVE_COMPILE_TEST = "nativeCompileTest"
+    const val TASK_NAME_NATIVE_RUN_TEST = "nativeRunTest"
+
     fun Project.setIsInfraBom(isBom: Boolean) {
         project.extraProperties["infraIsBom"] = isBom
     }

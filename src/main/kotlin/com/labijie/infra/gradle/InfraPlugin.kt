@@ -2,7 +2,9 @@ package com.labijie.infra.gradle
 
 import com.labijie.infra.gradle.Utils.TASK_NAME_NATIVE_COMPILE_DEV
 import com.labijie.infra.gradle.Utils.TASK_NAME_NATIVE_COMPILE_PROD
+import com.labijie.infra.gradle.Utils.TASK_NAME_NATIVE_COMPILE_TEST
 import com.labijie.infra.gradle.Utils.TASK_NAME_NATIVE_RUN_DEV
+import com.labijie.infra.gradle.Utils.TASK_NAME_NATIVE_RUN_TEST
 import org.graalvm.buildtools.gradle.tasks.BuildNativeImageTask
 import org.gradle.api.Plugin
 import org.gradle.api.Project
@@ -127,14 +129,36 @@ class InfraPlugin : Plugin<Project> {
                         task.dependsOn("nativeCompile")
                     }
 
+                    project.tasks.register(TASK_NAME_NATIVE_COMPILE_TEST) { task ->
+                        task.group = "native"
+                        task.description = "Inject spring.profiles.active=test into nativeCompile"
+
+                        task.dependsOn("nativeCompile")
+                    }
+
+                    project.tasks.register(TASK_NAME_NATIVE_RUN_TEST) { task ->
+                        task.group = "native"
+                        task.description = "Inject spring.profiles.active=test into nativeRun"
+
+                        task.dependsOn("nativeRun")
+                    }
+
 
                     project.gradle.taskGraph.whenReady { taskGraph ->
                         val devProfile =
                             taskGraph.allTasks.any { it.name == TASK_NAME_NATIVE_COMPILE_DEV || it.name == TASK_NAME_NATIVE_RUN_DEV }
+
                         val prodProfile = taskGraph.allTasks.any { it.name == TASK_NAME_NATIVE_COMPILE_PROD }
+
+                        val testProfile = taskGraph.allTasks.any { it.name == TASK_NAME_NATIVE_COMPILE_TEST || it.name == TASK_NAME_NATIVE_RUN_TEST  }
+
                         if (devProfile) {
                             setProfileToAotProcessTasks(project, taskGraph, "dev,local")
-                        } else if (prodProfile) {
+                        }
+                        else if(testProfile) {
+                            setProfileToAotProcessTasks(project, taskGraph, "test")
+                        }
+                        else if (prodProfile) {
                             setProfileToAotProcessTasks(project, taskGraph, "prod")
                         }
 
