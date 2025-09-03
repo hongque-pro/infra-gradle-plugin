@@ -15,7 +15,8 @@ import org.gradle.api.internal.provider.MissingValueException
  * @Date: 2023/11/21
  * @Description:
  */
-class PublishingBuilder internal constructor(private val project: Project) {
+class PublishingBuilder internal constructor(private val project: Project, private var isSnapshot: Boolean = false) {
+
     fun pom(action: Action<in PomInfo>) {
         val pom = PomInfo()
         action.execute(pom)
@@ -25,7 +26,11 @@ class PublishingBuilder internal constructor(private val project: Project) {
         if (pom.gitUrl.isBlank()) throw MissingValueException("${pom::gitUrl.name} is missing, set in labijie publish block")
         if (pom.githubScmUrl.isBlank()) throw MissingValueException("${pom::githubScmUrl.name} is missing, set in labijie publish block")
 
-        this.project.configurePublishing(pom, pom.idGeneration)
+        this.project.configurePublishing(pom, isSnapshot, pom.idGeneration)
+    }
+
+    fun snapshot(isSnapshot: Boolean) {
+        this.isSnapshot = isSnapshot
     }
 
     fun toGithubPackages(owner: String,

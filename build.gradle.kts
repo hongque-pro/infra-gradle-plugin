@@ -2,7 +2,7 @@
 group = "com.labijie.infra"
 version = Constants.pluginVersion
 
-val jdk_version = 21
+val jdkVersion = 21
 
 dependencies {
     compileOnly(gradleApi())
@@ -71,18 +71,18 @@ publishing {
 //}
 
 java {
-    sourceCompatibility =  JavaVersion.toVersion(jdk_version)
-    targetCompatibility = JavaVersion.toVersion(jdk_version)
+    sourceCompatibility =  JavaVersion.toVersion(jdkVersion)
+    targetCompatibility = JavaVersion.toVersion(jdkVersion)
     withJavadocJar()
     withSourcesJar()
     toolchain {
-        languageVersion = JavaLanguageVersion.of(jdk_version)
+        languageVersion = JavaLanguageVersion.of(jdkVersion)
     }
 }
 
 kotlin {
     // Or shorter:
-    jvmToolchain(jdk_version)
+    jvmToolchain(jdkVersion)
 }
 
 
@@ -105,8 +105,8 @@ repositories {
 }
 
 tasks.withType(JavaCompile::class.java) {
-    sourceCompatibility = "$jdk_version"
-    targetCompatibility = "$jdk_version"
+    sourceCompatibility = "$jdkVersion"
+    targetCompatibility = "$jdkVersion"
 }
 
 tasks.withType(Javadoc::class.java) {
