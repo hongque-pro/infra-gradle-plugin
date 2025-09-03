@@ -1,5 +1,6 @@
 package com.labijie.infra.gradle
 
+import com.labijie.infra.gradle.BuildConfig.useDefaultRepositories
 import com.labijie.infra.gradle.Utils.TASK_NAME_NATIVE_COMPILE_DEV
 import com.labijie.infra.gradle.Utils.TASK_NAME_NATIVE_COMPILE_PROD
 import com.labijie.infra.gradle.Utils.TASK_NAME_NATIVE_COMPILE_TEST
@@ -11,6 +12,7 @@ import org.gradle.api.Project
 import org.gradle.api.Task
 import org.gradle.api.execution.TaskExecutionGraph
 import org.gradle.api.tasks.JavaExec
+import org.gradle.kotlin.dsl.findByType
 import org.jetbrains.kotlin.allopen.gradle.SpringGradleSubplugin
 import org.springframework.boot.gradle.tasks.aot.ProcessAot
 
@@ -105,6 +107,18 @@ class InfraPlugin : Plugin<Project> {
     private fun registerNativeTasks(project: Project) {
 
         project.afterEvaluate {
+
+            val ext = project.extensions.findByType<InfraPluginExtension>()
+            ext?.let {
+                extension->
+                val properties = extension.infraProperties
+                it.repositories.useDefaultRepositories(
+                    it,
+                    properties.useMavenProxy,
+                    properties.useMavenSnapshotRepository
+                )
+            }
+
             project.plugins.withId("org.graalvm.buildtools.native") {
 
                 if (project.tasks.findByName("nativeCompile") != null) {

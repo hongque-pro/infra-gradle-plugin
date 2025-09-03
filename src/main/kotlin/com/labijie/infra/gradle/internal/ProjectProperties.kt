@@ -14,6 +14,7 @@ class ProjectProperties {
     var jdkVersion: String = DEFAULT_JDK_VERSION
     var includeSource: Boolean = false
     var includeDocument: Boolean = false
+    var useMavenSnapshotRepository: Boolean = false
     var useMavenProxy: Boolean = false
     var gitPropertiesPluginEnabled = true
 

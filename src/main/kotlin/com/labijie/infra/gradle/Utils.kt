@@ -1,6 +1,8 @@
 package com.labijie.infra.gradle
 
 import org.gradle.api.Project
+import org.gradle.api.artifacts.dsl.RepositoryHandler
+import org.gradle.api.artifacts.repositories.MavenArtifactRepository
 import org.gradle.api.plugins.PluginAware
 import org.jetbrains.kotlin.gradle.plugin.extraProperties
 import java.util.*
@@ -82,5 +84,10 @@ object Utils {
         }
     }
 
+    internal fun RepositoryHandler.hasRepositoryWithUrl(url: String): Boolean {
+        return this.any { repo ->
+            (repo as? MavenArtifactRepository)?.url?.toString() == url
+        }
+    }
 
 }

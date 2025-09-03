@@ -64,16 +64,23 @@ internal object BuildConfig {
         this.extraProperties.set(githubTokenExtra, token)
     }
 
-    private fun RepositoryHandler.useDefaultRepositories(
+    internal fun RepositoryHandler.useDefaultRepositories(
         project: Project,
         useMavenProxy: Boolean = true,
-        githubPackages: Map<String, MutableSet<String>>
+        useMavenSnapshot: Boolean = true,
+        githubPackages: Map<String, MutableSet<String>> = emptyMap()
     ) {
         mavenLocal()
         if (useMavenProxy) {
             maven {
                 it.setUrl(project.getProxyMavenRepository())
                 it.isAllowInsecureProtocol = true
+            }
+        }
+        if(useMavenSnapshot) {
+            maven {
+                it.setUrl("https://central.sonatype.com/repository/maven-snapshots/")
+                it.mavenContent { it.snapshotsOnly() }
             }
         }
         mavenCentral()
@@ -224,11 +231,6 @@ internal object BuildConfig {
         isBom: Boolean,
         projectProperties: ProjectProperties
     ) {
-        this.repositories.useDefaultRepositories(
-            this,
-            projectProperties.useMavenProxy,
-            projectProperties.githubRepositories
-        )
 
         if (isBom) {
             return
@@ -406,7 +408,7 @@ internal object BuildConfig {
     /**
      * Configure maven publish pom info
      */
-    fun Project.configurePublishing(info: PomInfo, isSnapshot: Boolean, artifactName: ((p: Project) -> String)? = null) {
+    fun Project.configurePublishing(info: PomInfo, artifactName: ((p: Project) -> String)? = null) {
 
         this.apply(plugin = "maven-publish")
         this.apply(plugin = "signing")
@@ -415,13 +417,6 @@ internal object BuildConfig {
         val artifact = artifactName?.invoke(project) ?: project.name
 
         val v = project.version.toString()
-        val normalizedVersion = if(isSnapshot) {
-            if(!v.endsWith("-SNAPSHOT")) {
-                "${v}-SNAPSHOT"
-            } else v
-        }else {
-            v.removeSuffix("-SNAPSHOT")
-        }
 
         this.configureFor(PublishingExtension::class.java) {
             publications { pub ->
@@ -432,7 +427,7 @@ internal object BuildConfig {
                         name.set(info.projectName ?: artifact)
                         description.set(info.description)
                         url.set(info.projectUrl)
-                        version = normalizedVersion
+                        version = v
                         licenses { spec ->
                             spec.license { l ->
                                 l.name.set(info.licenseName)

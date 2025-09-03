@@ -271,8 +271,8 @@ open class InfraPluginExtension @Inject constructor(
         this.project.useGithubAccount(user, key)
     }
 
-    fun publishing(isSnapshot: Boolean = false, action: Action<in PublishingBuilder>) {
-        val builder = PublishingBuilder(this.project, isSnapshot)
+    fun publishing(action: Action<in PublishingBuilder>) {
+        val builder = PublishingBuilder(this.project)
         action.execute(builder)
     }
 
