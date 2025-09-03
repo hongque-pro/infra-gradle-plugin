@@ -18,7 +18,8 @@ object Constants {
     const val checkUpdatePluginArtifact = "com.github.ben-manes:gradle-versions-plugin:$checkUpdatePlugin"
 
 
-    const val gitPropertiesPluginVersion = "2.5.0"
+    //https://github.com/n0mer/gradle-git-properties
+    const val gitPropertiesPluginVersion = "2.5.2"
     const val gitPropertiesPluginArtifact = "com.gorylenko.gradle-git-properties:gradle-git-properties:$gitPropertiesPluginVersion"
 }
 
