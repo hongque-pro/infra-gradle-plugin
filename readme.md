@@ -17,15 +17,15 @@ infra gradle 会自动引入其他的插件，并且版本会被绑定且版本�
 > 
 > `2.1.0`开始，infra-gradle 移除了 mybatis 插件引入，你需要手动引入它，可以通过 id("com.thinkimi.gradle.MybatisGenerator") 来引入，推荐你尝试 [Infra-Orm](https://github.com/hongque-pro/infra-orm) 代替 mybatis 获得更好的开发体验。
 
-| 插件 id                                     | DSL 手动引入方式                     | 版本       |
-|-------------------------------------------|--------------------------------|----------|
-| org.jetbrains.kotlin.jvm                  | kotlin("jvm")                  | 2.2.0    |
+| 插件 id                                     | DSL 手动引入方式                     | 版本      |
+|-------------------------------------------|--------------------------------|---------|
+| org.jetbrains.kotlin.jvm                  | kotlin("jvm")                  | 2.2.0   |
 | org.jetbrains.kotlin.plugin.allopen       | id                             | 2.2.0   |
 | org.jetbrains.kotlin.plugin.serialization | kotlin("plugin.serialization") | 2.2.0   |
 | com.google.devtools.ksp                   | id                             | 2.2.0-+ |
-| io.github.gradle-nexus.publish-plugin     | id                             | 2.0.0    |
-| com.gorylenko.gradle-git-properties       | id                             | 2.5.0    |
-| com.github.ben-manes.versions             | id                             | 0.52.0   |
+| io.github.gradle-nexus.publish-plugin     | id                             | 2.0.0   |
+| com.gorylenko.gradle-git-properties       | id                             | 2.5.2   |
+| com.github.ben-manes.versions             | id                             | 0.52.0  |
 
 `2.1.0` 开始，不再支持可变 kotlin 依赖版本，因为我们发现当 kotlin 依赖包版本和 kotlin gradle 插件版本不一致时可能出现潜在的 BUG。
 
