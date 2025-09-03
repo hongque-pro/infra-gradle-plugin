@@ -1,5 +1,5 @@
 object Constants {
-    const val pluginVersion = "2.1.4"
+    const val pluginVersion = "2.1.3"
 
     const val kotlinVersion = "2.2.0"
     //https://github.com/gradle-nexus/publish-plugin
